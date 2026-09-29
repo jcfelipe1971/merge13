@@ -8,9 +8,8 @@
 interface
 
 uses
-  System.SysUtils, System.Classes, System.Generics.Collections,
-  System.RegularExpressions, System.IOUtils, FireDAC.Comp.Client, UImpDfm,
-  UImpReglas, UImpTexto;
+  System.SysUtils, System.Classes, System.Generics.Collections, System.RegularExpressions, System.IOUtils,
+  FireDAC.Comp.Client, UImpDfm, UImpReglas, UImpTexto;
 
 type
   TImpLog = reference to procedure(const S: string);
@@ -90,7 +89,8 @@ type
     procedure ActualizaDpr;
     procedure CopiaFramework;
   public
-    constructor Create(const DirMerge, DirProyecto: string; Conexion: TFDConnection; ALog: TImpLog; SinTeeChart: Boolean = True);
+    constructor Create(const DirMerge, DirProyecto: string; Conexion: TFDConnection; ALog: TImpLog;
+      SinTeeChart: Boolean = True);
     destructor Destroy; override;
     procedure ImportaModulo(const FormUnit: string; const DMUnit: string = '');
     procedure ImportaUnit(const AUnit: string);
@@ -102,15 +102,17 @@ type
 implementation
 
 uses
-  System.StrUtils, System.Math, Data.DB, FireDAC.Stan.Param,
-  FireDAC.Comp.DataSet;
+  System.StrUtils, System.Math, Data.DB, FireDAC.Stan.Param, FireDAC.Comp.DataSet;
 
 type
   TFDQueryAcc = class(TFDQuery);
 
 const
   GNUGETTEXT_USES = '{IDIOMA_CODE} gnugettext {IDIOMA_CODE}';
-  USES_DM: array[0..16] of string = ('System.SysUtils', 'System.Classes', 'System.Variants', 'Data.DB', 'Vcl.Forms', 'Vcl.Controls', 'Vcl.Dialogs', 'Winapi.Windows', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Option', 'FireDAC.Stan.Param', 'FireDAC.Stan.Error', 'FireDAC.DatS', 'FireDAC.Phys.Intf', 'FireDAC.DApt.Intf', 'FireDAC.DApt', 'FireDAC.Comp.Client');
+  USES_DM: array[0..16] of string = ('System.SysUtils', 'System.Classes', 'System.Variants', 'Data.DB', 'Vcl.Forms',
+    'Vcl.Controls', 'Vcl.Dialogs', 'Winapi.Windows', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Option', 'FireDAC.Stan.Param',
+    'FireDAC.Stan.Error', 'FireDAC.DatS', 'FireDAC.Phys.Intf', 'FireDAC.DApt.Intf', 'FireDAC.DApt',
+    'FireDAC.Comp.Client');
   USES_FIREDAC_EXTRA: array[0..2] of string = ('FireDAC.Stan.Async', 'FireDAC.Comp.DataSet', 'gnugettext');
 
 function Grupo(const M: TMatch; N: Integer): string;
@@ -147,7 +149,8 @@ end;
 
 { TImportador }
 
-constructor TImportador.Create(const DirMerge, DirProyecto: string; Conexion: TFDConnection; ALog: TImpLog; SinTeeChart: Boolean);
+constructor TImportador.Create(const DirMerge, DirProyecto: string; Conexion: TFDConnection; ALog: TImpLog;
+  SinTeeChart: Boolean);
 var
   F: string;
 begin
@@ -329,7 +332,8 @@ begin
   Result := TRegEx.Replace(Result, '(?<![\w?])\?(?=[A-Za-z_])', ':');
 end;
 
-procedure TImportador.DescribeSQL(const SQL: string; Campos: TDictionary<string, string>; Tamanos: TDictionary<string, Integer>);
+procedure TImportador.DescribeSQL(const SQL: string; Campos: TDictionary<string, string>;
+  Tamanos: TDictionary<string, Integer>);
 // Prepara la consulta con la conexión de Merge13: FireDAC dice qué clase de campo crea para cada columna
 var
   Q: TFDQuery;
@@ -368,7 +372,7 @@ var
   i: Integer;
   M: TMatch;
 begin
-  Texto := TRegEx.Replace(string.Join(#10, SQL), '''(?:[^'']|'''')*''', '''''');
+  Texto := TRegEx.Replace(String.Join(#10, SQL), '''(?:[^'']|'''')*''', '''''');
   Nombres := TStringList.Create;
   L := TStringList.Create;
   try
@@ -401,7 +405,7 @@ function TImportador.ConvierteTransaccion(N: TDfmNodo): TDfmNodo;
 var
   Params: string;
 begin
-  Params := LowerCase(string.Join(' ', N.Cadenas('TRParams.Strings')));
+  Params := LowerCase(String.Join(' ', N.Cadenas('TRParams.Strings')));
   Result := TDfmNodo.Create(N.Tipo, N.Nombre, 'TFDTransaction');
   Result.PonValor('Options.Isolation', IfThen(Pos('read_commit', Params) > 0, 'xiReadCommitted', 'xiSnapshot'));
   if TRegEx.IsMatch(Params, '\bread\b') then
@@ -425,7 +429,7 @@ begin
   Clases := TDictionary<string, string>.Create;
   Tamanos := TDictionary<string, Integer>.Create;
   try
-    DescribeSQL(string.Join(#13#10, SQL), Clases, Tamanos);
+    DescribeSQL(String.Join(#13#10, SQL), Clases, Tamanos);
     for H in N.Hijos do
     begin
       if not EndsText('Field', H.Clase) then
@@ -433,16 +437,15 @@ begin
       FN := UpperCase(SinComillas(H.Valor('FieldName')));
       Calc := MatchText(H.Valor('FieldKind'), ['fkCalculated', 'fkLookup']) or SameText(H.Valor('Calculated'), 'True');
       if (not Calc) and Clases.TryGetValue(FN, Cls) then
-
       else
       begin
         Cls := H.Clase;
-        if SameText(Cls, 'TFIBStringField') then
-          Cls := 'TStringField'
+        if SameText(Cls, 'TFIBStringField') then Cls := 'TStringField'
         else if SameText(Cls, 'TDateTimeField') or SameText(Cls, 'TDateField') then
           Cls := IfThen(Calc, Cls, 'TSQLTimeStampField');
         if (not Calc) and (Clases.Count > 0) then
-          Revisar(Format('Campo %s: %s no es una columna de la consulta de %s (¿campo sobrante en Merge?).', [H.Nombre, FN, N.Nombre]));
+          Revisar(Format('Campo %s: %s no es una columna de la consulta de %s (¿campo sobrante en Merge?).',
+            [H.Nombre, FN, N.Nombre]));
       end;
       F := TDfmNodo.Create(H.Tipo, H.Nombre, Cls);
       for P in H.Props do
@@ -462,7 +465,10 @@ end;
 
 function TImportador.ConvierteDataset(N: TDfmNodo; Updates: TList<TDfmNodo>): TDfmNodo;
 const
-  EVENTOS_FDQUERY = ';BeforeOpen;AfterOpen;BeforeClose;AfterClose;BeforeInsert;AfterInsert;BeforeEdit;AfterEdit;' + 'BeforePost;AfterPost;BeforeCancel;AfterCancel;BeforeDelete;AfterDelete;BeforeScroll;AfterScroll;BeforeRefresh;' + 'AfterRefresh;OnCalcFields;OnDeleteError;OnEditError;OnNewRecord;OnPostError;OnFilterRecord;OnUpdateRecord;' + 'OnUpdateError;OnReconcileError;BeforeApplyUpdates;AfterApplyUpdates;BeforeExecute;AfterExecute;';
+  EVENTOS_FDQUERY = ';BeforeOpen;AfterOpen;BeforeClose;AfterClose;BeforeInsert;AfterInsert;BeforeEdit;AfterEdit;' +
+    'BeforePost;AfterPost;BeforeCancel;AfterCancel;BeforeDelete;AfterDelete;BeforeScroll;AfterScroll;BeforeRefresh;' +
+    'AfterRefresh;OnCalcFields;OnDeleteError;OnEditError;OnNewRecord;OnPostError;OnFilterRecord;OnUpdateRecord;' +
+    'OnUpdateError;OnReconcileError;BeforeApplyUpdates;AfterApplyUpdates;BeforeExecute;AfterExecute;';
 var
   Q, U: TDfmNodo;
   P: TDfmProp;
@@ -470,7 +476,6 @@ var
   Tabla, Acc: string;
   RW: Boolean;
   i: Integer;
-
   function SQLDe(const Prop: string): TArray<string>;
   var
     k: Integer;
@@ -479,14 +484,14 @@ var
     for k := 0 to High(Result) do
       Result[k] := ParamsFib(Result[k]);
   end;
-
 begin
   Q := TDfmNodo.Create(N.Tipo, N.Nombre, 'TFDQuery');
   for P in N.Props do
     if Pos(';' + P.Nombre + ';', EVENTOS_FDQUERY) > 0 then
       Q.PonValor(P.Nombre, P.Lineas)
     else if StartsStr('On', P.Nombre) or StartsStr('After', P.Nombre) or StartsStr('Before', P.Nombre) then
-      Revisar(Format('%s.%s = %s: evento propio de %s que TFDQuery no tiene; el método queda sin enganchar.', [N.Nombre, P.Nombre, P.Texto, N.Clase]));
+      Revisar(Format('%s.%s = %s: evento propio de %s que TFDQuery no tiene; el método queda sin enganchar.',
+        [N.Nombre, P.Nombre, P.Texto, N.Clase]));
   Q.PonValor('Connection', 'DMMain.DataBase');
   if N.Prop('Transaction') <> nil then
     Q.PonValor('Transaction', N.Valor('Transaction'));
@@ -515,14 +520,10 @@ begin
     begin
       U := TDfmNodo.Create('object', 'FDU' + N.Nombre, 'TFDUpdateSQL');
       U.PonValor('Connection', 'DMMain.DataBase');
-      if Length(Ins) > 0 then
-        U.PonCadenas('InsertSQL.Strings', Ins);
-      if Length(Upd) > 0 then
-        U.PonCadenas('ModifySQL.Strings', Upd);
-      if Length(Del) > 0 then
-        U.PonCadenas('DeleteSQL.Strings', Del);
-      if Length(Ref) > 0 then
-        U.PonCadenas('FetchRowSQL.Strings', Ref);
+      if Length(Ins) > 0 then U.PonCadenas('InsertSQL.Strings', Ins);
+      if Length(Upd) > 0 then U.PonCadenas('ModifySQL.Strings', Upd);
+      if Length(Del) > 0 then U.PonCadenas('DeleteSQL.Strings', Del);
+      if Length(Ref) > 0 then U.PonCadenas('FetchRowSQL.Strings', Ref);
       U.PonValor('Left', IntToStr(StrToIntDef(N.Valor('Left'), 0) + 90));
       U.PonValor('Top', IfThen(N.Valor('Top') = '', '0', N.Valor('Top')));
       Updates.Add(U);
@@ -533,17 +534,14 @@ begin
     for i := 0 to High(Claves) do
       Claves[i] := Trim(Claves[i]);
     if Length(Claves) > 0 then
-      Q.PonValor('UpdateOptions.KeyFields', Comillas(string.Join(';', Claves)));
+      Q.PonValor('UpdateOptions.KeyFields', Comillas(String.Join(';', Claves)));
     Tabla := Trim(SinComillas(N.Valor('TableName')));
     if Tabla <> '' then
       Q.PonValor('UpdateOptions.UpdateTableName', Comillas(Tabla));
     Acc := N.Valor('AccionesInhibidas');
-    if ContainsText(Acc, 'Borrar') then
-      Q.PonValor('UpdateOptions.EnableDelete', 'False');
-    if ContainsText(Acc, 'Insertar') then
-      Q.PonValor('UpdateOptions.EnableInsert', 'False');
-    if ContainsText(Acc, 'Modificar') then
-      Q.PonValor('UpdateOptions.EnableUpdate', 'False');
+    if ContainsText(Acc, 'Borrar') then Q.PonValor('UpdateOptions.EnableDelete', 'False');
+    if ContainsText(Acc, 'Insertar') then Q.PonValor('UpdateOptions.EnableInsert', 'False');
+    if ContainsText(Acc, 'Modificar') then Q.PonValor('UpdateOptions.EnableUpdate', 'False');
     // control de concurrencia de TFIBTableSet
     if SameText(N.Valor('BloqOpt'), 'True') then
     begin
@@ -555,11 +553,13 @@ begin
           Acc := '';
           if i <= High(CamposB) then
             Acc := StringReplace(CamposB[i], ' ', '', [rfReplaceAll]);
-          FBloqueos.Add(Format('  TControlConcurrencia.Registra(%s, ''%s'', ''%s'', cmSelectWithLock);', [N.Nombre, Trim(Tablas[i]), Acc]));
+          FBloqueos.Add(Format('  TControlConcurrencia.Registra(%s, ''%s'', ''%s'', cmSelectWithLock);',
+            [N.Nombre, Trim(Tablas[i]), Acc]));
         end;
     end
     else if (Length(Claves) > 0) and (Tabla <> '') and not ContainsText(N.Valor('Opciones'), 'NoControlarConcurrencia') then
-      FBloqueos.Add(Format('  TControlConcurrencia.Registra(%s, ''%s'', ''%s'', cmUpdate);', [N.Nombre, Tabla, string.Join(',', Claves)]));
+      FBloqueos.Add(Format('  TControlConcurrencia.Registra(%s, ''%s'', ''%s'', cmUpdate);',
+        [N.Nombre, Tabla, String.Join(',', Claves)]));
   end
   else
     Q.PonValor('UpdateOptions.ReadOnly', 'True');
@@ -637,7 +637,8 @@ begin
   if not M.Success then
     Exit;
   for MM in TRegEx.Matches(M.Groups[1].Value, '\bprocedure\s+(\w+)\s*(\([^)]*\))?\s*;', [roIgnoreCase]) do
-    FFirmas.AddOrSetValue(LowerCase(MM.Groups[1].Value), NormalizaFirma(IfThen(Grupo(MM, 2) <> '', Grupo(MM, 2), '()')));
+    FFirmas.AddOrSetValue(LowerCase(MM.Groups[1].Value),
+      NormalizaFirma(IfThen(Grupo(MM, 2) <> '', Grupo(MM, 2), '()')));
 end;
 
 function TImportador.EnlazaEvento(const Control, ClaseDestino, Evento, Metodo: string): string;
@@ -655,7 +656,8 @@ begin
   if (Esperada = nil) or MismaFirma(Esperada, Real) then
     Result := Metodo
   else
-    Revisar(Format('%s.%s = %s: la firma no coincide con la del evento de %s; no se enlaza.', [Control, Evento, Metodo, ClaseDestino]));
+    Revisar(Format('%s.%s = %s: la firma no coincide con la del evento de %s; no se enlaza.',
+      [Control, Evento, Metodo, ClaseDestino]));
 end;
 
 procedure TImportador.ConvierteProps(Origen, Destino: TDfmNodo; const ClaseDestino: string);
@@ -697,7 +699,8 @@ begin
         end;
         if not FReglas.EsEvento(ClaseDestino, Ev) then
         begin
-          Revisar(Format('%s.%s = %s: %s no tiene ese evento en Delphi 13; el método queda sin enganchar.', [Origen.Nombre, P.Nombre, Metodo, ClaseDestino]));
+          Revisar(Format('%s.%s = %s: %s no tiene ese evento en Delphi 13; el método queda sin enganchar.',
+            [Origen.Nombre, P.Nombre, Metodo, ClaseDestino]));
           Continue;
         end;
         Metodo := EnlazaEvento(Origen.Nombre, ClaseDestino, Ev, Metodo);
@@ -826,7 +829,8 @@ begin
   end;
   if MatchText(N.Clase, ['TLFDBComboBoxValue', 'TRxDBComboBox', 'TDBComboBoxValue']) then
     FCombosValue.Add(N.Nombre);
-  if SameText(Dest, N.Clase) and (FReglas.ClaseVCL(Dest) = nil) and TRegEx.IsMatch(N.Clase, '^T(LF|HY|FIB|Rx|Flat|G2K|Ns|CVB|Code|Year|IOF)', [roIgnoreCase]) then
+  if SameText(Dest, N.Clase) and (FReglas.ClaseVCL(Dest) = nil) and
+    TRegEx.IsMatch(N.Clase, '^T(LF|HY|FIB|Rx|Flat|G2K|Ns|CVB|Code|Year|IOF)', [roIgnoreCase]) then
     Revisar(Format('%s: clase %s sin regla de conversión (componente propio a portar).', [N.Nombre, N.Clase]));
   for H in N.Hijos do
   begin
@@ -994,25 +998,16 @@ begin
       Corta: string;
     begin
       Result := U;
-
-      // 1. Eliminar units de componentes obsoletos, que desaparecen o no existen en Delphi 13 (FIB, FR2, DBXpress, etc.)
-      if FReglas.UnitFuera(U) or
-         SameText(U, 'DBXpress') or SameText(U, 'DbxCommon') or SameText(U, 'DbxMetaData') or
-         TRegEx.IsMatch(U, '^(HYFIBQuery|FIBQuery|FIBDataSet|FIBDatabase|FIBTableDataSet\w*|' +
-         'FIBDataSet\w*|UFIBModificados|ibase|ib_externals|FIB|FIBMisc|FIBSQLMonitor|ScriptQuery|FR_\w+|DBTables|' +
-         'UFIBDBEditFind|FIBUtiles|UFormGestAux)$', [roIgnoreCase]) then
+      if FReglas.UnitFuera(U) or TRegEx.IsMatch(U, '^(HYFIBQuery|FIBQuery|FIBDataSet|FIBDatabase|FIBTableDataSet\w*|' +
+        'FIBDataSet\w*|UFIBModificados|ibase|ib_externals|FIB|FIBMisc|FIBSQLMonitor|ScriptQuery|FR_\w+|DBTables|' +
+        'UFIBDBEditFind|FIBUtiles|UFormGestAux)$', [roIgnoreCase]) then
         Exit('');
-
-      // 2. Eliminar TeeChart si está desactivado en la configuración del importador
       if FSinTeeChart and TRegEx.IsMatch(U, '^(VclTee\.\w+|Chart|Series|TeEngine|TeeProcs|DbChart|TeeShape)$', [roIgnoreCase]) then
         Exit('');
-
-      // 3. Aplicar reglas de renombrado de units (System., Vcl., Data., Winapi., etc.)
       Corta := FReglas.UnitCorta(U);
       if Corta <> '' then
         Exit(Corta);
-
-      // 4. Criterio de Delfos: gnugettext siempre marcado para el proceso de idiomas
+      // criterio de Delfos: gnugettext siempre marcado para el proceso de idiomas
       if SameText(U, 'gnugettext') then
         Exit(GNUGETTEXT_USES);
     end);
@@ -1104,7 +1099,8 @@ begin
       for U in USES_DM do
         if StartsText('FireDAC', U) and (Faltan.IndexOf(U) < 0) then
           Faltan.Add(U);
-    if TRegEx.IsMatch(Iface, '\b(' + string.Join('|', FTiposPendientes.ToStringArray) + ')\b', [roIgnoreCase]) and (FTiposPendientes.Count > 0) then
+    if TRegEx.IsMatch(Iface, '\b(' + String.Join('|', FTiposPendientes.ToStringArray) + ')\b', [roIgnoreCase]) and
+      (FTiposPendientes.Count > 0) then
       Faltan.Add('UTiposPendientesMerge');
     Result := AnyadeUses(Src, 'interface', Faltan.ToStringArray);
   finally
@@ -1114,7 +1110,10 @@ end;
 
 function TImportador.ConversionesComunes(const Src, Nombre: string): string;
 const
-  TIPOS: array[0..12] of array[0..1] of string = (('THYDatabase', 'TFDConnection'), ('TFIBDatabase', 'TFDConnection'), ('TFIBTableSet', 'TFDQuery'), ('TFIBDataSet', 'TFDQuery'), ('TFIBDataSetRO', 'TFDQuery'), ('TFIBTableSetRO', 'TFDQuery'), ('TFIBDataSetRW', 'TFDQuery'), ('TFIBInfoSet', 'TFDQuery'), ('THYFIBQuery', 'TFDQuery'), ('TFIBQuery', 'TFDQuery'), ('THYTransaction', 'TFDTransaction'), ('TFIBTransaction', 'TFDTransaction'), ('TFIBStringField', 'TStringField'));
+  TIPOS: array[0..12] of array[0..1] of string = (('THYDatabase', 'TFDConnection'), ('TFIBDatabase', 'TFDConnection'),('TFIBTableSet', 'TFDQuery'), ('TFIBDataSet', 'TFDQuery'),
+    ('TFIBDataSetRO', 'TFDQuery'), ('TFIBTableSetRO', 'TFDQuery'), ('TFIBDataSetRW', 'TFDQuery'),
+    ('TFIBInfoSet', 'TFDQuery'), ('THYFIBQuery', 'TFDQuery'), ('TFIBQuery', 'TFDQuery'),
+    ('THYTransaction', 'TFDTransaction'), ('TFIBTransaction', 'TFDTransaction'), ('TFIBStringField', 'TStringField'));
 var
   S, Eq, Orig, Dest: string;
   i: Integer;
@@ -1137,7 +1136,8 @@ begin
   S := EnCodigo(S, '(?<![\w.])SelectSQL\b', 'SQL');
   S := EnCodigo(S, '\.AsDouble\b', '.AsFloat');
   S := EnCodigo(S, '\.AsLong\b', '.AsInteger');
-  S := EnCodigo(S, '(?<![\w.])(DecimalSeparator|ThousandSeparator|ShortDateFormat|LongDateFormat|DateSeparator|' + 'TimeSeparator|CurrencyString|ShortTimeFormat|LongTimeFormat)\b', 'FormatSettings.$1');
+  S := EnCodigo(S, '(?<![\w.])(DecimalSeparator|ThousandSeparator|ShortDateFormat|LongDateFormat|DateSeparator|' +
+    'TimeSeparator|CurrencyString|ShortTimeFormat|LongTimeFormat)\b', 'FormatSettings.$1');
   S := EnCodigo(S, 'FormatSettings\.FormatSettings\.', 'FormatSettings.');
   S := EnCodigo(S, '(?<![\w.])(SysUtils|Classes|Windows|Forms|Dialogs|Math|StrUtils|DateUtils|Variants|Graphics|Controls)\.(?=[A-Za-z_])',
     function(M: TMatch): string
@@ -1154,9 +1154,11 @@ begin
         Result := ParamsFib(T);
     end);
   // propiedades FreeIB sin equivalente
-  S := TRegEx.Replace(S, '^([ \t]*)((?:[\w.]+\.)?(?:AutoTrans|BufferChunks|UsaNulls|ParamCheck|GoToFirstRecordOnExecute)\s*:=[^;\n]*;)', '$1// $2  // FreeIB: sin equivalente en FireDAC', [roIgnoreCase, roMultiLine]);
+  S := TRegEx.Replace(S, '^([ \t]*)((?:[\w.]+\.)?(?:AutoTrans|BufferChunks|UsaNulls|ParamCheck|GoToFirstRecordOnExecute)\s*:=[^;\n]*;)',
+    '$1// $2  // FreeIB: sin equivalente en FireDAC', [roIgnoreCase, roMultiLine]);
   // SQL de actualización FIB asignada en código: FireDAC la genera
-  S := TRegEx.Replace(S, '^([ \t]*)((?:[\w.]+\.)?(?:InsertSQL|UpdateSQL|DeleteSQL|RefreshSQL)\.(?:Text\s*:=|Add\s*\(|Clear\b)[^;\n]*;)', '$1// $2  // FireDAC genera esta SQL (UpdateOptions)', [roIgnoreCase, roMultiLine]);
+  S := TRegEx.Replace(S, '^([ \t]*)((?:[\w.]+\.)?(?:InsertSQL|UpdateSQL|DeleteSQL|RefreshSQL)\.(?:Text\s*:=|Add\s*\(|Clear\b)[^;\n]*;)',
+    '$1// $2  // FireDAC genera esta SQL (UpdateOptions)', [roIgnoreCase, roMultiLine]);
   S := EnCodigo(S, '(?<![\w])((?![\w.]*(?:DataBase|Connection|DB)\b)[\w.]*Transaction\w*|TLocal\w*|TUpdate\w*)\.InTransaction\b', '$1.Active');
   // Delphi 6 admitía un parámetro vacío al final: F(a, )
   S := EnCodigo(S, ',\s*\)', ')');
@@ -1170,7 +1172,8 @@ begin
   end;
   // funciones de Merge que en Merge13 están en UAuxMerge
   S := SinComentarios(S, '\bDMMain\.(TituloEstado|TituloSituacionProduccion)\s*\[([^\]\[]+)\]', '$1($2)');
-  S := EnCodigo(S, '\bDMMain\.(TituloEstado|TituloSituacionProduccion|TituloUnidadMedida|TituloPeriodoFacturacion|' + 'FiltraRO|FiltraSQL|MinTercero|AbrirArchivo|DameDirectorioComunicaciones|DameDirectorioCodCliPro)\b', '$1');
+  S := EnCodigo(S, '\bDMMain\.(TituloEstado|TituloSituacionProduccion|TituloUnidadMedida|TituloPeriodoFacturacion|' +
+    'FiltraRO|FiltraSQL|MinTercero|AbrirArchivo|DameDirectorioComunicaciones|DameDirectorioCodCliPro)\b', '$1');
   S := EnCodigo(S, '\bEntorno\.(Empresa|Ejercicio|Canal|Entrada)Str\b', 'IntToStr(Entorno.$1)');
   S := SinComentarios(S, '\b([\w.]+)\.Ordenar\s*\(', 'Ordenar($1, ');
   S := EnCodigo(S, '\b([\w.]+)\.OrdenadoPor\b', 'OrdenadoPor($1)');
@@ -1182,23 +1185,27 @@ begin
   S := EnCodigo(S, '\b\w+\.(?:EditaControl|InsertaControl)\s*:=\s*([\w.]+)', 'EnfocaControl($1)');
   // base G2K de Merge sin equivalente
   S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*(?<![\w.])(?:Campo|ControlEdit)\s*:=[^\n]*;)', '$1// $2  // [G2K]', [roIgnoreCase, roMultiLine]);
-  S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\.(?:Insercion|UsaDicG2K|AutoCambiarColumna|AutoPostEnCheckBox|AutoStartDrag|' + 'CampoNum|CampoStr|Campos_Desplegar)\s*:=[^\n]*;)', '$1// $2  // [propiedad de EditFind/GridFind]', [roIgnoreCase, roMultiLine]);
+  S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\.(?:Insercion|UsaDicG2K|AutoCambiarColumna|AutoPostEnCheckBox|AutoStartDrag|' +
+    'CampoNum|CampoStr|Campos_Desplegar)\s*:=[^\n]*;)', '$1// $2  // [propiedad de EditFind/GridFind]', [roIgnoreCase, roMultiLine]);
   S := ReglasUses(S, Nombre);
   S := QuitaUnitsNoUsadas(S);
   // quien traduce (TranslateComponent / _()) necesita gnugettext en la interfaz
-  if TRegEx.IsMatch(QuitaComentarios(S), '\bTranslateComponent\s*\(|(?<![\w.])_\s*\(', [roIgnoreCase]) and not TRegEx.IsMatch(QuitaComentarios(S), '\buses\b[^;]*\bgnugettext\b', [roIgnoreCase]) then
+  if TRegEx.IsMatch(QuitaComentarios(S), '\bTranslateComponent\s*\(|(?<![\w.])_\s*\(', [roIgnoreCase]) and
+    not TRegEx.IsMatch(QuitaComentarios(S), '\buses\b[^;]*\bgnugettext\b', [roIgnoreCase]) then
     S := AnyadeUses(S, 'interface', ['gnugettext']);
   S := ReglasUses(S, Nombre);   // vuelve a escribir los uses con el formato de gnugettext
   // las rutinas de UUtiles de Merge que Merge13 no tiene están en UUtilesMerge
   if not SameText(Nombre, 'UUtilesMerge.pas') and TRegEx.IsMatch(QuitaComentarios(S), '\buses\b[^;]*\bUUtiles\b', [roIgnoreCase]) then
-    S := AnyadeUses(S, IfThen(TRegEx.IsMatch(QuitaComentarios(TRegEx.Split(S, '\bimplementation\b', [roIgnoreCase])[0]), '\buses\b[^;]*\bUUtiles\b', [roIgnoreCase]), 'interface', 'implementation'), ['UUtilesMerge']);
+    S := AnyadeUses(S, IfThen(TRegEx.IsMatch(QuitaComentarios(TRegEx.Split(S, '\bimplementation\b', [roIgnoreCase])[0]),
+      '\buses\b[^;]*\bUUtiles\b', [roIgnoreCase]), 'interface', 'implementation'), ['UUtilesMerge']);
   Result := S;
 end;
 
 function TImportador.ConviertePasUnit(const Src, Nombre: string): string;
 begin
   Result := ConversionesComunes(Src, Nombre);
-  Result := AnyadeUses(Result, 'implementation', ['Data.DB', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Param', 'FireDAC.Comp.Client', 'FireDAC.DApt', 'UAuxMerge']);
+  Result := AnyadeUses(Result, 'implementation', ['Data.DB', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Param',
+    'FireDAC.Comp.Client', 'FireDAC.DApt', 'UAuxMerge']);
   Result := CompletaUsesInterfaz(Result);
   Result := MarcaIdioma(QuitaDuplicadosUses(Result));
 end;
@@ -1230,7 +1237,10 @@ begin
       S := Copy(S, 1, M.Index + M.Length - 1) + Bloque + Copy(S, M.Index + M.Length, MaxInt);
     S := AnyadeUses(S, 'implementation', ['UControlConcurrencia']);
   end;
-  S := AnyadeUses(S, 'interface', TArray<string>.Create('System.SysUtils', 'System.Classes', 'System.Variants', 'Data.DB', 'Vcl.Forms', 'Vcl.Controls', 'Vcl.Dialogs', 'Winapi.Windows', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Option', 'FireDAC.Stan.Param', 'FireDAC.Stan.Error', 'FireDAC.DatS', 'FireDAC.Phys.Intf', 'FireDAC.DApt.Intf', 'FireDAC.DApt', 'FireDAC.Comp.Client'));
+  S := AnyadeUses(S, 'interface', TArray<string>.Create('System.SysUtils', 'System.Classes', 'System.Variants', 'Data.DB',
+    'Vcl.Forms', 'Vcl.Controls', 'Vcl.Dialogs', 'Winapi.Windows', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Option',
+    'FireDAC.Stan.Param', 'FireDAC.Stan.Error', 'FireDAC.DatS', 'FireDAC.Phys.Intf', 'FireDAC.DApt.Intf', 'FireDAC.DApt',
+    'FireDAC.Comp.Client'));
   S := AnyadeUses(S, 'implementation', ['UAuxMerge']);
   S := CompletaUsesInterfaz(S);
   Result := MarcaIdioma(QuitaDuplicadosUses(S));
@@ -1271,7 +1281,8 @@ begin
     Exit;
   end;
   Creado := True;
-  Result := TRegEx.Replace(Src, '(\{\$R \*\.(?:dfm|DFM)\})', '$1' + #13#10#13#10 + 'procedure ' + Clase + '.FormCreate(Sender: TObject);' + #13#10 + 'begin' + #13#10 + '  inherited;' + #13#10 + Bloque + 'end;' + #13#10, [roIgnoreCase]);
+  Result := TRegEx.Replace(Src, '(\{\$R \*\.(?:dfm|DFM)\})', '$1' + #13#10#13#10 + 'procedure ' + Clase +
+    '.FormCreate(Sender: TObject);' + #13#10 + 'begin' + #13#10 + '  inherited;' + #13#10 + Bloque + 'end;' + #13#10, [roIgnoreCase]);
   Result := TRegEx.Replace(Result, '(' + Clase + '\s*=\s*class\([^)]*\)\s*\r?\n)', '$1    procedure FormCreate(Sender: TObject);' + #13#10);
 end;
 
@@ -1283,11 +1294,13 @@ var
 begin
   Result := '';
   Src := LeeTexto(RutaMerge('UFMain'));
-  M := TRegEx.Match(Src, 'procedure TFMain\.(\w+)Execute\(Sender: TObject\);(?:(?!\nend;).)*?AbreForm\(\s*' + FormCls + '\s*,\s*' + FormVar + '\b(.*?)\nend;', [roIgnoreCase, roSingleLine]);
+  M := TRegEx.Match(Src, 'procedure TFMain\.(\w+)Execute\(Sender: TObject\);(?:(?!\nend;).)*?AbreForm\(\s*' + FormCls +
+    '\s*,\s*' + FormVar + '\b(.*?)\nend;', [roIgnoreCase, roSingleLine]);
   if not M.Success then
     Exit;
   F := TRegEx.Match(M.Groups[2].Value, FormVar + '\.(\w+)\(\s*FiltroAccion\s*\)', [roIgnoreCase]);
-  Result := Format('RegistraModulo(''%s'', %s, @%s%s);', [M.Groups[1].Value, FormCls, FormVar, IfThen(Grupo(F, 1) <> '', ', ''' + Grupo(F, 1) + '''', '')]);
+  Result := Format('RegistraModulo(''%s'', %s, @%s%s);', [M.Groups[1].Value, FormCls, FormVar,
+    IfThen(Grupo(F, 1) <> '', ', ''' + Grupo(F, 1) + '''', '')]);
 end;
 
 function TImportador.ConviertePasForm(const Src, Nombre, Clase: string; Eliminados: TStringList; const Registro: string): string;
@@ -1304,9 +1317,10 @@ begin
   // componentes eliminados: fuera sus campos; las sentencias que los usan se comentan
   for var C in Eliminados do
     S := TRegEx.Replace(S, '^\s*' + C + '\s*:\s*\w+\s*;[^\n]*\n', '', [roIgnoreCase, roMultiLine]);
-  Elim := string.Join('|', Eliminados.ToStringArray);
+  Elim := String.Join('|', Eliminados.ToStringArray);
   Elim := IfThen(Elim <> '', Elim + '|', '') + 'CEMain|EPMain|G2KTableLoc|FSMain|CEMainPMEdit';
-  S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\b(' + Elim + ')\b[^\n]*;[ \t]*)(\r?)$', '$1// [G2K eliminado] $2$4', [roIgnoreCase, roMultiLine]);
+  S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\b(' + Elim + ')\b[^\n]*;[ \t]*)(\r?)$', '$1// [G2K eliminado] $2$4',
+    [roIgnoreCase, roMultiLine]);
   // asignar campos solo en edición (TDBEdit.OnChange salta también al navegar)
   Lin := TStringList.Create;
   try
@@ -1315,7 +1329,8 @@ begin
     begin
       M := TRegEx.Match(Lin[i], '^(\s*)(\w+)\.Field\.(Value|As\w+)\s*:=\s*(.*;)\s*$');
       if M.Success and ((i = Lin.Count - 1) or not TRegEx.IsMatch(Lin[i + 1], '^\s*else\b', [roIgnoreCase])) then
-        Lin[i] := Format('%sif %s.Field.DataSet.State in dsEditModes then %s.Field.%s := %s', [M.Groups[1].Value, M.Groups[2].Value, M.Groups[2].Value, M.Groups[3].Value, M.Groups[4].Value]);
+        Lin[i] := Format('%sif %s.Field.DataSet.State in dsEditModes then %s.Field.%s := %s',
+          [M.Groups[1].Value, M.Groups[2].Value, M.Groups[2].Value, M.Groups[3].Value, M.Groups[4].Value]);
     end;
     S := Lin.Text;
   finally
@@ -1324,7 +1339,8 @@ begin
   // EditFind: propiedades y métodos -> TBuscadorCampo
   for B in FBuscadores do
   begin
-    S := EnCodigo(S, '\b' + B.Control + '\.(SetBufferText|ClearBufferText|Accion|CondicionBusqueda|SalirSiNoExiste|AutoCambiarFoco)\b', 'B' + B.Control + '.$1');
+    S := EnCodigo(S, '\b' + B.Control + '\.(SetBufferText|ClearBufferText|Accion|CondicionBusqueda|SalirSiNoExiste|AutoCambiarFoco)\b',
+      'B' + B.Control + '.$1');
     S := EnCodigo(S, '\b' + B.Control + '\.Tabla_a_buscar\b', 'B' + B.Control + '.Tabla');
     S := EnCodigo(S, '\b' + B.Control + '\.CampoADevolver\b', 'B' + B.Control + '.CampoDevolver');
   end;
@@ -1368,13 +1384,16 @@ begin
         if C <> '' then
           Campos := Campos + IfThen(Campos <> '', ', ') + '''' + C + '''';
       if B.EsDB then
-        Ini.Add(Format('B%s := TBuscadorCampo.Crea(Self, %s, ''%s'', ''%s'', ''%s'', [%s], ''%s'');', [B.Control, B.Control, B.Tabla, B.Campo, IfThen(B.Devolver <> '', B.Devolver, B.Campo), Campos, B.Filtro]))
+        Ini.Add(Format('B%s := TBuscadorCampo.Crea(Self, %s, ''%s'', ''%s'', ''%s'', [%s], ''%s'');',
+          [B.Control, B.Control, B.Tabla, B.Campo, IfThen(B.Devolver <> '', B.Devolver, B.Campo), Campos, B.Filtro]))
       else
-        Ini.Add(Format('B%s := TBuscadorCampo.CreaLibre(Self, %s, ''%s'', ''%s'', [%s], ''%s'');', [B.Control, B.Control, B.Tabla, B.Devolver, Campos, B.Filtro]));
+        Ini.Add(Format('B%s := TBuscadorCampo.CreaLibre(Self, %s, ''%s'', ''%s'', [%s], ''%s'');',
+          [B.Control, B.Control, B.Tabla, B.Devolver, Campos, B.Filtro]));
       for i := 0 to B.Props.Count - 1 do
         Ini.Add(Format('B%s.%s := %s;', [B.Control, B.Props.Names[i], B.Props.ValueFromIndex[i]]));
       for i := 0 to B.Eventos.Count - 1 do
-        if FFirmas.ContainsKey(LowerCase(B.Eventos.ValueFromIndex[i])) and MismaFirma(FFirmas[LowerCase(B.Eventos.ValueFromIndex[i])], NormalizaFirma('(Sender: TObject)')) then
+        if FFirmas.ContainsKey(LowerCase(B.Eventos.ValueFromIndex[i])) and
+          MismaFirma(FFirmas[LowerCase(B.Eventos.ValueFromIndex[i])], NormalizaFirma('(Sender: TObject)')) then
           Ini.Add(Format('B%s.%s := %s;', [B.Control, B.Eventos.Names[i], B.Eventos.ValueFromIndex[i]]));
     end;
     Ini.AddStrings(FAsignaciones);
@@ -1386,12 +1405,14 @@ begin
   end;
   // métodos puente
   if FPuentesImpl.Count > 0 then
-    S := TRegEx.Replace(S, '(\{\$R \*\.(?:dfm|DFM)\})', '$1' + #13#10#13#10 + StringReplace(FPuentesImpl.Text, '%CLASE%', Clase, [rfReplaceAll]), [roIgnoreCase]);
+    S := TRegEx.Replace(S, '(\{\$R \*\.(?:dfm|DFM)\})', '$1' + #13#10#13#10 +
+      StringReplace(FPuentesImpl.Text, '%CLASE%', Clase, [rfReplaceAll]), [roIgnoreCase]);
   // registro del módulo en el menú (idempotente)
   S := TRegEx.Replace(S, '\r?\n?\s*// merge2m13-registro.*?// merge2m13-fin\r?\n', #13#10, [roSingleLine]);
   if Registro <> '' then
   begin
-    L := '  // merge2m13-registro (la acción de FMain abre este módulo)' + #13#10 + '  ' + Registro + #13#10 + '  // merge2m13-fin' + #13#10;
+    L := '  // merge2m13-registro (la acción de FMain abre este módulo)' + #13#10 + '  ' + Registro + #13#10 +
+      '  // merge2m13-fin' + #13#10;
     if TRegEx.IsMatch(S, '^initialization\b', [roMultiLine, roIgnoreCase]) then
       S := TRegEx.Replace(S, '(^initialization\b[^\n]*\n)', '$1' + L, [roMultiLine, roIgnoreCase])
     else
@@ -1407,9 +1428,12 @@ end;
 { ------------------------------------------------------------------------------------------------ dependencias }
 
 const
-  TIPOS_PENDIENTES_RE = '\b(Tfr(?!x)[A-Z]\w*|TfrxHY\w*|THYReport\w*|TControlEdit|TPopUpTeclas|THYMEditPanel|TG2KTBLoc|' + 'TLFFibFormStorage|TFormStorage|TFormPlacement|TEntornoFind2000|TTeclas|TLFManager|TCodeBar|TYearPlanner|TIOFFind|' + 'TLetra|TGantt|TRxClock|TCVBNorma\w*|TConfirming|THYPrinterOptions|TRxMemoryData|THYIBBackup|TFRTallas_\w+)\b';
+  TIPOS_PENDIENTES_RE = '\b(Tfr(?!x)[A-Z]\w*|TfrxHY\w*|THYReport\w*|TControlEdit|TPopUpTeclas|THYMEditPanel|TG2KTBLoc|' +
+    'TLFFibFormStorage|TFormStorage|TFormPlacement|TEntornoFind2000|TTeclas|TLFManager|TCodeBar|TYearPlanner|TIOFFind|' +
+    'TLetra|TGantt|TRxClock|TCVBNorma\w*|TConfirming|THYPrinterOptions|TRxMemoryData|THYIBBackup|TFRTallas_\w+)\b';
   TIPOS_TEECHART_RE = '\b(TDBChart|TChart|T\w+Series)\b';
-  DIRECTIVAS_RE = '(?:\s*(?:virtual|override|dynamic|abstract|reintroduce|overload|static|inline|message\s+\w+|stdcall|' + 'cdecl|register|safecall|final)\s*;)*';
+  DIRECTIVAS_RE = '(?:\s*(?:virtual|override|dynamic|abstract|reintroduce|overload|static|inline|message\s+\w+|stdcall|' +
+    'cdecl|register|safecall|final)\s*;)*';
 
 function QuitaSobrecargasDuplicadas(const Texto: string): string;
 // Al pasar tipos distintos de Merge al mismo tipo de Delphi 13 (TFIBDataSetRO y TFIBTableSet -> TFDQuery)
@@ -1422,12 +1446,10 @@ var
   Bloques: TMatchCollection;
   S: TStringBuilder;
   i, Ini, Fin: Integer;
-
   function Norm(const H: string): string;
   begin
     Result := LowerCase(TRegEx.Replace(TRegEx.Replace(H, DIRECTIVAS_RE, '', [roIgnoreCase]), '\s+', ''));
   end;
-
 begin
   Result := Texto;
   Corte := TRegEx.Match(Texto, '\bimplementation\b', [roIgnoreCase]);
@@ -1506,7 +1528,8 @@ begin
     Exit('');
   Tipo := LowerCase(Grupo(M, 2));
   Resto := Grupo(M, 4);
-  Result := Grupo(M, 1) + Grupo(M, 2) + ' ' + IfThen(Clase <> '', Clase + '.') + Grupo(M, 3) + Resto + #13#10 + 'begin' + #13#10;
+  Result := Grupo(M, 1) + Grupo(M, 2) + ' ' +
+    IfThen(Clase <> '', Clase + '.') + Grupo(M, 3) + Resto + #13#10 + 'begin' + #13#10;
   if Tipo = 'function' then
   begin
     R := TRegEx.Match(Resto, ':\s*([\w.<>]+)\s*;\s*$');
@@ -1545,13 +1568,15 @@ begin
     Impl.Append('implementation' + #13#10#13#10 + '// ==== PENDIENTE: interfaz real de Merge; el código se importará más adelante ====' + #13#10#13#10);
     // métodos de las clases
     for M in TRegEx.Matches(Limpio, '\b(T\w+)\s*=\s*class\b(?!\s*(?:of|;))(.*?)\n\s*end(?:\s+\w+)?\s*;', [roIgnoreCase, roSingleLine]) do
-      for MM in TRegEx.Matches(M.Groups[2].Value, '^\s*((?:class\s+)?(?:procedure|function|constructor|destructor)\s+\w+\s*' + '(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' + DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
+      for MM in TRegEx.Matches(M.Groups[2].Value, '^\s*((?:class\s+)?(?:procedure|function|constructor|destructor)\s+\w+\s*' +
+        '(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' + DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
         if not TRegEx.IsMatch(MM.Groups[1].Value, '\babstract\s*;', [roIgnoreCase]) then
           Impl.Append(Cuerpo(MM.Groups[1].Value, M.Groups[1].Value));
     // rutinas sueltas
     SinClases := TRegEx.Replace(Limpio, '\b(T\w+)\s*=\s*class\b(?!\s*(?:of|;)).*?\n\s*end(?:\s+\w+)?\s*;', '', [roIgnoreCase, roSingleLine]);
     SinClases := TRegEx.Replace(SinClases, '\b\w+\s*=\s*(?:procedure|function)\b[^;]*(?:\([^)]*\))?[^;]*;(\s*of\s+object\s*;)?', '', [roIgnoreCase]);
-    for MM in TRegEx.Matches(SinClases, '^\s*((?:procedure|function)\s+\w+\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' + DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
+    for MM in TRegEx.Matches(SinClases, '^\s*((?:procedure|function)\s+\w+\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' +
+      DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
       Impl.Append(Cuerpo(MM.Groups[1].Value, ''));
     Impl.Append('end.' + #13#10);
     S := TrimRight(Iface) + #13#10#13#10 + Impl.ToString;
@@ -1601,7 +1626,7 @@ end;
 procedure TImportador.GeneraUUtilesMerge;
 // Rutinas de UUtiles de Merge que Merge13 no tiene y que usa lo importado (con su código real y dependencias)
 var
-  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab, CabAux: string;
+  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab: string;
   EnM13, Usadas, Palabras, Pend: TStringList;
   Decl, Bloques: TDictionary<string, TList<string>>;
   M: TMatch;
@@ -1645,7 +1670,8 @@ begin
         EnM13.Add(LowerCase(M.Groups[1].Value));
     end;
     // declaraciones de la interfaz de UUtiles de Merge
-    for M in TRegEx.Matches(QuitaComentarios(IfaceMerge), '^\s*((?:function|procedure)\s+(\w+)\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' + DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
+    for M in TRegEx.Matches(QuitaComentarios(IfaceMerge), '^\s*((?:function|procedure)\s+(\w+)\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;' +
+      DIRECTIVAS_RE + ')', [roIgnoreCase, roMultiLine]) do
     begin
       Nombre := LowerCase(M.Groups[2].Value);
       if not Decl.ContainsKey(Nombre) then
@@ -1696,43 +1722,31 @@ begin
       Usadas.Add(Nombre);
       for Texto in Bloques[Nombre] do
         for M in TRegEx.Matches(QuitaComentarios(Texto), '\b\w+\b') do
-          if Bloques.ContainsKey(LowerCase(M.Value)) and (Usadas.IndexOf(LowerCase(M.Value)) < 0) and (EnM13.IndexOf(LowerCase(M.Value)) < 0) then
+          if Bloques.ContainsKey(LowerCase(M.Value)) and (Usadas.IndexOf(LowerCase(M.Value)) < 0) and
+            (EnM13.IndexOf(LowerCase(M.Value)) < 0) then
             Pend.Add(LowerCase(M.Value));
     end;
     M := TRegEx.Match(IfaceMerge, '^\s*uses\b.*?;', [roIgnoreCase, roSingleLine, roMultiLine]);
     UsesIface := IfThen(M.Success, Trim(M.Value), '');
     M := TRegEx.Match(ImplMerge, '^\s*uses\b(.*?);', [roIgnoreCase, roSingleLine, roMultiLine]);
     UsesImpl := 'uses' + IfThen(Grupo(M, 1) <> '', Grupo(M, 1) + ',', '') + ' UUtiles, UEntorno, UDMMain;';
-    Iface.Append('unit UUtilesMerge;' + #13#10#13#10 + '// Rutinas de UUtiles de Merge que Merge13 no tiene (código original importado).' + #13#10 + '// Las genera el importador: solo las que usa lo importado y sus dependencias.' + #13#10#13#10 + 'interface' + #13#10#13#10 + UsesIface + #13#10#13#10);
+    Iface.Append('unit UUtilesMerge;' + #13#10#13#10 +
+      '// Rutinas de UUtiles de Merge que Merge13 no tiene (código original importado).' + #13#10 +
+      '// Las genera el importador: solo las que usa lo importado y sus dependencias.' + #13#10#13#10 +
+      'interface' + #13#10#13#10 + UsesIface + #13#10#13#10);
     for Nombre in Orden do
       if Usadas.IndexOf(Nombre) >= 0 then
       begin
         if Decl.ContainsKey(Nombre) then
-        begin
           for Cab in Decl[Nombre] do
-          begin
-            // Usamos una variable auxiliar para evitar el error E2081
-            CabAux := Trim(Cab);
-            // Si hay múltiples declaraciones del mismo nombre, todas deben llevar 'overload'
-            if (Decl[Nombre].Count > 1) and not EndsText('overload;', CabAux) and not EndsText('overload', CabAux) then
-              CabAux := CabAux + ' overload;';
-            Iface.Append(CabAux + #13#10);
-          end;
-        end
+            Iface.Append(Cab + #13#10)
         else
-        begin
           for Texto in Bloques[Nombre] do
           begin
             M := TRegEx.Match(Texto, '^((?:procedure|function)\s+\w+\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;)', [roIgnoreCase]);
             if M.Success then
-            begin
-              CabAux := Trim(M.Value);
-              if (Bloques[Nombre].Count > 1) and not EndsText('overload;', CabAux) and not EndsText('overload', CabAux) then
-                CabAux := CabAux + ' overload;';
-              Iface.Append(CabAux + #13#10);
-            end;
+              Iface.Append(M.Value + IfThen(Bloques[Nombre].Count > 1, ' overload;') + #13#10);
           end;
-        end;
         for Texto in Bloques[Nombre] do
           Impl.Append(Texto);
       end;
@@ -1758,17 +1772,15 @@ end;
 
 procedure TImportador.ResuelveDependencias(Importadas: TStringList);
 const
-  Base = ';ufmain;uformgest;uentorno;udmmain;uutiles;';
+  BASE = ';ufmain;uformgest;uentorno;udmmain;uutiles;';
 var
   Cola, Faltan, Forzados, Vistos: TStringList;
   U, K, Ruta, F, Nombre: string;
   Reales: TStringList;
-
   function EsStub(const X: string): Boolean;
   begin
     Result := FileExists(ChangeFileExt(RutaMerge(X), '.dfm')) or (Forzados.IndexOf(LowerCase(X)) >= 0);
   end;
-
 begin
   Cola := TStringList.Create;
   Faltan := TStringList.Create;
@@ -1789,14 +1801,15 @@ begin
       U := Cola[Cola.Count - 1];
       Cola.Delete(Cola.Count - 1);
       K := LowerCase(U);
-      if (Vistos.IndexOf(K) >= 0) or (Pos(';' + K + ';', Base) > 0) or (RutaMerge(U) = '') then
+      if (Vistos.IndexOf(K) >= 0) or (Pos(';' + K + ';', BASE) > 0) or (RutaMerge(U) = '') then
         Continue;
       Vistos.Add(K);
       Nombre := TPath.GetFileNameWithoutExtension(RutaMerge(U));
       // ya importada de verdad
       if Length(TDirectory.GetFiles(TPath.Combine(FProyecto, 'Merge'), Nombre + '.pas', TSearchOption.soAllDirectories)) > 0 then
         Continue;
-      if (not DirectoryExists(TPath.Combine(FProyecto, 'Pendientes')) or not FileExists(TPath.Combine(FProyecto, 'Pendientes\' + Nombre + '.pas'))) and ExisteEnProyecto(Nombre) then
+      if (not DirectoryExists(TPath.Combine(FProyecto, 'Pendientes')) or
+        not FileExists(TPath.Combine(FProyecto, 'Pendientes\' + Nombre + '.pas'))) and ExisteEnProyecto(Nombre) then
         Continue;
       Faltan.Add(Nombre);
       Ruta := RutaMerge(U);
@@ -1825,13 +1838,13 @@ begin
         TFile.Delete(TPath.Combine(FProyecto, 'Pendientes\' + U + '.pas'));
     GeneraTiposPendientes;
     if Reales.Count > 0 then
-      Log('Importadas también (sin formulario): ' + string.Join(', ', Reales.ToStringArray));
+      Log('Importadas también (sin formulario): ' + String.Join(', ', Reales.ToStringArray));
     Faltan.Text := '';
     for Nombre in Vistos do
       if FileExists(TPath.Combine(FProyecto, 'Pendientes\' + TPath.GetFileNameWithoutExtension(RutaMerge(Nombre)) + '.pas')) then
         Faltan.Add(TPath.GetFileNameWithoutExtension(RutaMerge(Nombre)));
     if Faltan.Count > 0 then
-      Log('Pendientes (interfaz sin código): ' + string.Join(', ', Faltan.ToStringArray));
+      Log('Pendientes (interfaz sin código): ' + String.Join(', ', Faltan.ToStringArray));
   finally
     Cola.Free;
     Faltan.Free;
@@ -1871,14 +1884,18 @@ begin
           end;
           Lineas.Add(Format('  %s in ''%s''%s,', [Nombre, Rel, Comp]));
         end;
-    Texto := TRegEx.Replace(Texto, '(UMensajesDeError in ''UMensajesDeError.pas'',)', '$1' + #13#10 + '  {MERGE2M13-INICIO} // units importadas de Merge (las mantiene el importador)' + #13#10 + Lineas.Text + '  {MERGE2M13-FIN}');
+    Texto := TRegEx.Replace(Texto, '(UMensajesDeError in ''UMensajesDeError.pas'',)',
+      '$1' + #13#10 + '  {MERGE2M13-INICIO} // units importadas de Merge (las mantiene el importador)' + #13#10 +
+      Lineas.Text + '  {MERGE2M13-FIN}');
     // gnugettext en el uses del proyecto y su instancia creada antes de inicializar la aplicación
     if not TRegEx.IsMatch(QuitaComentarios(Texto), '\bgnugettext\b', [roIgnoreCase]) then
       Texto := TRegEx.Replace(Texto, '(\buses\s*\r?\n)', '$1  ' + GNUGETTEXT_USES + ',' + #13#10, [roIgnoreCase])
     else
-      Texto := TRegEx.Replace(Texto, '(?<!\{IDIOMA_CODE\} )\bgnugettext\b(?! \{IDIOMA_CODE\})(?=\s*(?:in\s+''[^'']*''\s*)?[,;])', GNUGETTEXT_USES, [roIgnoreCase]);
+      Texto := TRegEx.Replace(Texto, '(?<!\{IDIOMA_CODE\} )\bgnugettext\b(?! \{IDIOMA_CODE\})(?=\s*(?:in\s+''[^'']*''\s*)?[,;])',
+        GNUGETTEXT_USES, [roIgnoreCase]);
     if not ContainsText(Texto, 'DefaultInstance := TGnuGettextInstance.Create') then
-      Texto := TRegEx.Replace(Texto, '(\bbegin\s*\r?\n)(\s*Application\.Initialize)', '$1  DefaultInstance := TGnuGettextInstance.Create;' + #13#10 + '$2', [roIgnoreCase]);
+      Texto := TRegEx.Replace(Texto, '(\bbegin\s*\r?\n)(\s*Application\.Initialize)',
+        '$1  DefaultInstance := TGnuGettextInstance.Create;' + #13#10 + '$2', [roIgnoreCase]);
     GuardaTexto(Ruta, Texto, False);
   finally
     Lineas.Free;
@@ -1994,7 +2011,9 @@ begin
         GuardaDfm(Nuevo, TPath.Combine(DestinoDe(FormUnit), TPath.GetFileNameWithoutExtension(Ruta) + '.dfm'));
         GuardaTexto(TPath.Combine(DestinoDe(FormUnit), TPath.GetFileName(Ruta)), Src);
         Importadas.Add(TPath.GetFileNameWithoutExtension(Ruta));
-        Log(Format('Formulario convertido: %s -> Merge\%s  (%s)', [FormUnit, ExtractRelativePath(IncludeTrailingPathDelimiter(FMerge), ExtractFilePath(Ruta)), IfThen(Registro <> '', Registro, 'sin registro en el menú')]));
+        Log(Format('Formulario convertido: %s -> Merge\%s  (%s)', [FormUnit,
+          ExtractRelativePath(IncludeTrailingPathDelimiter(FMerge), ExtractFilePath(Ruta)),
+          IfThen(Registro <> '', Registro, 'sin registro en el menú')]));
       finally
         Nuevo.Free;
       end;
@@ -2008,7 +2027,9 @@ begin
     GeneraUUtilesMerge;
     ActualizaDpr;
     ForceDirectories(TPath.Combine(FProyecto, 'Conversion\informes'));
-    GuardaTexto(TPath.Combine(FProyecto, 'Conversion\informes\informe_' + FormUnit + '.txt'), 'PENDIENTES DE REVISAR (' + IntToStr(FRevisar.Count) + ')' + #13#10 + FRevisar.Text + #13#10 + 'CONVERSIONES AUTOMATICAS' + #13#10 + FAuto.Text);
+    GuardaTexto(TPath.Combine(FProyecto, 'Conversion\informes\informe_' + FormUnit + '.txt'),
+      'PENDIENTES DE REVISAR (' + IntToStr(FRevisar.Count) + ')' + #13#10 + FRevisar.Text + #13#10 +
+      'CONVERSIONES AUTOMATICAS' + #13#10 + FAuto.Text);
     Log(Format('Informe: Conversion\informes\informe_%s.txt (%d puntos a revisar)', [FormUnit, FRevisar.Count]));
   finally
     Importadas.Free;
@@ -2038,4 +2059,3 @@ begin
 end;
 
 end.
-

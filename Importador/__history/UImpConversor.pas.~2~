@@ -994,25 +994,14 @@ begin
       Corta: string;
     begin
       Result := U;
-
-      // 1. Eliminar units de componentes obsoletos, que desaparecen o no existen en Delphi 13 (FIB, FR2, DBXpress, etc.)
-      if FReglas.UnitFuera(U) or
-         SameText(U, 'DBXpress') or SameText(U, 'DbxCommon') or SameText(U, 'DbxMetaData') or
-         TRegEx.IsMatch(U, '^(HYFIBQuery|FIBQuery|FIBDataSet|FIBDatabase|FIBTableDataSet\w*|' +
-         'FIBDataSet\w*|UFIBModificados|ibase|ib_externals|FIB|FIBMisc|FIBSQLMonitor|ScriptQuery|FR_\w+|DBTables|' +
-         'UFIBDBEditFind|FIBUtiles|UFormGestAux)$', [roIgnoreCase]) then
+      if FReglas.UnitFuera(U) or TRegEx.IsMatch(U, '^(HYFIBQuery|FIBQuery|FIBDataSet|FIBDatabase|FIBTableDataSet\w*|' + 'FIBDataSet\w*|UFIBModificados|ibase|ib_externals|FIB|FIBMisc|FIBSQLMonitor|ScriptQuery|FR_\w+|DBTables|' + 'UFIBDBEditFind|FIBUtiles|UFormGestAux)$', [roIgnoreCase]) then
         Exit('');
-
-      // 2. Eliminar TeeChart si está desactivado en la configuración del importador
       if FSinTeeChart and TRegEx.IsMatch(U, '^(VclTee\.\w+|Chart|Series|TeEngine|TeeProcs|DbChart|TeeShape)$', [roIgnoreCase]) then
         Exit('');
-
-      // 3. Aplicar reglas de renombrado de units (System., Vcl., Data., Winapi., etc.)
       Corta := FReglas.UnitCorta(U);
       if Corta <> '' then
         Exit(Corta);
-
-      // 4. Criterio de Delfos: gnugettext siempre marcado para el proceso de idiomas
+      // criterio de Delfos: gnugettext siempre marcado para el proceso de idiomas
       if SameText(U, 'gnugettext') then
         Exit(GNUGETTEXT_USES);
     end);
@@ -1601,7 +1590,7 @@ end;
 procedure TImportador.GeneraUUtilesMerge;
 // Rutinas de UUtiles de Merge que Merge13 no tiene y que usa lo importado (con su código real y dependencias)
 var
-  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab, CabAux: string;
+  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab: string;
   EnM13, Usadas, Palabras, Pend: TStringList;
   Decl, Bloques: TDictionary<string, TList<string>>;
   M: TMatch;
