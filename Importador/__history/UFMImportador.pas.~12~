@@ -66,7 +66,6 @@ type
     procedure TVMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure BCargarListadosClick(Sender: TObject);
     procedure EBuscarModulosChange(Sender: TObject);
-    procedure EBuscarListadosChange(Sender: TObject);
   private
     FRutasModulos: TStringList;   // Ruta de cada nodo de módulos (Node.Data = índice + 1)
     FRutasListados: TStringList;  // Ruta de cada nodo de listados (Node.Data = índice + 1)
@@ -133,11 +132,6 @@ begin
     D := ExtractFilePath(ExcludeTrailingPathDelimiter(D));
   end;
   Result := '';
-end;
-
-procedure TFMImportador.EBuscarListadosChange(Sender: TObject);
-begin
-  ActualizarArbolListados;
 end;
 
 procedure TFMImportador.EBuscarModulosChange(Sender: TObject);

@@ -48,11 +48,6 @@ type
     BCargarListados: TButton;
     BConvertir: TButton;
     LEstado: TLabel;
-    Panel1: TPanel;
-    Label1: TLabel;
-    EBuscarModulos: TEdit;
-    EBuscarListados: TEdit;
-    Label2: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BMergeClick(Sender: TObject);
@@ -62,11 +57,9 @@ type
     procedure BCargarModulosClick(Sender: TObject);
     procedure BImportarClick(Sender: TObject);
     procedure BMarcarNadaClick(Sender: TObject);
+    procedure BCargarListadosClick(Sender: TObject);
     procedure BConvertirClick(Sender: TObject);
     procedure TVMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure BCargarListadosClick(Sender: TObject);
-    procedure EBuscarModulosChange(Sender: TObject);
-    procedure EBuscarListadosChange(Sender: TObject);
   private
     FRutasModulos: TStringList;   // Ruta de cada nodo de módulos (Node.Data = índice + 1)
     FRutasListados: TStringList;  // Ruta de cada nodo de listados (Node.Data = índice + 1)
@@ -82,6 +75,8 @@ type
      // Nuevos métodos para el filtro y actualización de árboles
     procedure ActualizarArbolModulos;
     procedure ActualizarArbolListados;
+    procedure EBuscarModulosChange(Sender: TObject);
+    procedure EBuscarListadosChange(Sender: TObject);
   end;
 
 var
@@ -133,16 +128,6 @@ begin
     D := ExtractFilePath(ExcludeTrailingPathDelimiter(D));
   end;
   Result := '';
-end;
-
-procedure TFMImportador.EBuscarListadosChange(Sender: TObject);
-begin
-  ActualizarArbolListados;
-end;
-
-procedure TFMImportador.EBuscarModulosChange(Sender: TObject);
-begin
-  ActualizarArbolModulos;
 end;
 
 function TFMImportador.EligeCarpeta(const Actual: string): string;
@@ -230,14 +215,6 @@ begin
   Cache.Add(LowerCase(Rel), Result);
 end;
 
-
-
-procedure TFMImportador.BCargarListadosClick(Sender: TObject);
-begin
-  EBuscarListados.Text := '';
-  ActualizarArbolListados;
-end;
-
 procedure TFMImportador.BCargarModulosClick(Sender: TObject);
 // Árbol de carpetas de Merge con los formularios que se pueden importar (UFMxxx con DFM)
 begin
@@ -323,6 +300,36 @@ begin
   LogModulos(Format('Terminado: %d importados, %d con error. Compilar Merge13 para incluirlos.', [Hechos, Fallos]));
 end;
 
+procedure TFMImportador.BCargarListadosClick(Sender: TObject);
+var
+  F: string;
+  Cache: TDictionary<string, TTreeNode>;
+  N: TTreeNode;
+  Total: Integer;
+begin
+  TVListados.Items.BeginUpdate;
+  Cache := TDictionary<string, TTreeNode>.Create;
+  try
+    TVListados.Items.Clear;
+    Total := 0;
+    if not DirectoryExists(EListados.Text) then
+      Exit;
+    for F in TDirectory.GetFiles(EListados.Text, '*.*', TSearchOption.soAllDirectories) do
+      if EsListado(F) then
+      begin
+        N := TVListados.Items.AddChild(NodoCarpeta(TVListados, EListados.Text, ExtractFilePath(F), Cache), ExtractFileName(F));
+        FRutas.Add(F);
+        N.Data := Pointer(NativeInt(FRutas.Count));
+        Inc(Total);
+      end;
+    TVListados.AlphaSort(True);
+    LEstado.Caption := Format('%d listados', [Total]);
+  finally
+    Cache.Free;
+    TVListados.Items.EndUpdate;
+  end;
+end;
+
 procedure TFMImportador.BConvertirClick(Sender: TObject);
 var
   i, Hechos, Fallos: Integer;
@@ -357,7 +364,10 @@ end;
 
 
 
-
+procedure TFMImportador.EBuscarModulosChange(Sender: TObject);
+begin
+  ActualizarArbolModulos;
+end;
 
 procedure TFMImportador.ActualizarArbolModulos;
 var
@@ -400,7 +410,8 @@ begin
         // Aplicar filtro de búsqueda (por nombre de archivo o carpeta)
         if FiltroLower <> '' then
         begin
-          if (Pos(FiltroLower, LowerCase(TPath.GetFileNameWithoutExtension(F))) = 0) and (Pos(FiltroLower, LowerCase(ExtractFilePath(F))) = 0) then
+          if (Pos(FiltroLower, LowerCase(TPath.GetFileNameWithoutExtension(F))) = 0) and
+             (Pos(FiltroLower, LowerCase(ExtractFilePath(F))) = 0) then
             Continue;
         end;
 
@@ -410,7 +421,8 @@ begin
         if M.Success then
           Titulo := SinComillas(Trim(M.Groups[1].Value));
 
-        N := TVModulos.Items.AddChild(NodoCarpeta(TVModulos, EMerge.Text, ExtractFilePath(F), Cache), TPath.GetFileNameWithoutExtension(F) + IfThen(Titulo <> '', '  —  ' + Titulo));
+        N := TVModulos.Items.AddChild(NodoCarpeta(TVModulos, EMerge.Text, ExtractFilePath(F), Cache),
+          TPath.GetFileNameWithoutExtension(F) + IfThen(Titulo <> '', '  —  ' + Titulo));
         FRutasModulos.Add(F);
         N.Data := Pointer(NativeInt(FRutasModulos.Count));
 
@@ -440,6 +452,16 @@ begin
 end;
 
 
+procedure TFMImportador.BCargarListadosClick(Sender: TObject);
+begin
+  EBuscarListados.Text := '';
+  ActualizarArbolListados;
+end;
+
+procedure TFMImportador.EBuscarListadosChange(Sender: TObject);
+begin
+  ActualizarArbolListados;
+end;
 
 procedure TFMImportador.ActualizarArbolListados;
 var
@@ -479,7 +501,8 @@ begin
 
         if FiltroLower <> '' then
         begin
-          if (Pos(FiltroLower, LowerCase(TPath.GetFileNameWithoutExtension(F))) = 0) and (Pos(FiltroLower, LowerCase(ExtractFilePath(F))) = 0) then
+          if (Pos(FiltroLower, LowerCase(TPath.GetFileNameWithoutExtension(F))) = 0) and
+             (Pos(FiltroLower, LowerCase(ExtractFilePath(F))) = 0) then
             Continue;
         end;
 

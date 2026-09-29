@@ -93,7 +93,7 @@ object FMImportador: TFMImportador
     Top = 64
     Width = 1000
     Height = 516
-    ActivePage = TSListados
+    ActivePage = TSModulos
     Align = alClient
     TabOrder = 1
     object TSModulos: TTabSheet
@@ -116,6 +116,8 @@ object FMImportador: TFMImportador
         ReadOnly = True
         TabOrder = 0
         OnMouseUp = TVMouseUp
+        ExplicitTop = 0
+        ExplicitHeight = 445
       end
       object MLog: TMemo
         Left = 423
@@ -126,6 +128,9 @@ object FMImportador: TFMImportador
         ScrollBars = ssBoth
         TabOrder = 1
         WordWrap = False
+        ExplicitLeft = 463
+        ExplicitTop = 112
+        ExplicitHeight = 445
       end
       object PBotonesModulos: TPanel
         Left = 0
@@ -170,6 +175,9 @@ object FMImportador: TFMImportador
         Height = 41
         Align = alTop
         TabOrder = 3
+        ExplicitLeft = 504
+        ExplicitTop = 24
+        ExplicitWidth = 185
         object Label1: TLabel
           Left = 8
           Top = 11
@@ -183,6 +191,7 @@ object FMImportador: TFMImportador
           Width = 272
           Height = 23
           TabOrder = 0
+          Text = 'EBuscarModulos'
           OnChange = EBuscarModulosChange
         end
       end
@@ -204,36 +213,36 @@ object FMImportador: TFMImportador
         BevelOuter = bvNone
         TabOrder = 0
         object LListados: TLabel
-          Left = 420
-          Top = 6
+          Left = 8
+          Top = 10
           Width = 96
           Height = 15
           Caption = 'Listados de Merge'
         end
         object LDestino: TLabel
-          Left = 433
-          Top = 28
+          Left = 8
+          Top = 38
           Width = 83
           Height = 15
           Caption = 'Carpeta destino'
         end
         object Label2: TLabel
-          Left = 8
-          Top = 22
+          Left = 700
+          Top = 6
           Width = 79
           Height = 15
           Caption = 'Buscar Listado:'
         end
         object EListados: TEdit
-          Left = 528
-          Top = 1
-          Width = 424
+          Left = 140
+          Top = 6
+          Width = 520
           Height = 23
           TabOrder = 0
         end
         object BListados: TButton
-          Left = 960
-          Top = -3
+          Left = 664
+          Top = 5
           Width = 30
           Height = 25
           Caption = '...'
@@ -241,15 +250,15 @@ object FMImportador: TFMImportador
           OnClick = BListadosClick
         end
         object EDestino: TEdit
-          Left = 528
-          Top = 27
-          Width = 433
+          Left = 140
+          Top = 34
+          Width = 520
           Height = 23
           TabOrder = 2
         end
         object BDestino: TButton
-          Left = 960
-          Top = 25
+          Left = 664
+          Top = 33
           Width = 30
           Height = 25
           Caption = '...'
@@ -257,11 +266,12 @@ object FMImportador: TFMImportador
           OnClick = BDestinoClick
         end
         object EBuscarListados: TEdit
-          Left = 93
-          Top = 20
+          Left = 700
+          Top = 27
           Width = 272
           Height = 23
           TabOrder = 4
+          Text = 'EBuscarModulos'
           OnChange = EBuscarListadosChange
         end
       end
