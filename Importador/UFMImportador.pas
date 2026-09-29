@@ -1,0 +1,384 @@
+﻿unit UFMImportador;
+
+// Importador de Merge dentro de Merge13.
+//  - Módulos: se elige la carpeta de Merge (Delphi 6); aparece en un árbol con casillas todo lo que se puede importar
+//    (formularios UFMxxx con su módulo de datos). Los marcados se importan a Merge13 (carpeta Merge\...), se registran
+//    en el menú y se actualiza Merge13.dpr. Después hay que compilar Merge13.
+//  - Listados: se elige la carpeta de listados de Merge; los marcados se convierten a la FastReport actual.
+// Usa la conexión abierta de Merge13 para leer los tipos reales de la base de datos.
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.Generics.Collections,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls;
+
+type
+  TFMImportador = class(TForm)
+    PTop: TPanel;
+    LMerge: TLabel;
+    EMerge: TEdit;
+    BMerge: TButton;
+    LProyecto: TLabel;
+    EProyecto: TEdit;
+    BProyecto: TButton;
+    CBSinTeeChart: TCheckBox;
+    PC: TPageControl;
+    TSModulos: TTabSheet;
+    TSListados: TTabSheet;
+    TVModulos: TTreeView;
+    SPModulos: TSplitter;
+    MLog: TMemo;
+    PBotonesModulos: TPanel;
+    BCargarModulos: TButton;
+    BImportar: TButton;
+    BMarcarNada: TButton;
+    PListados: TPanel;
+    LListados: TLabel;
+    EListados: TEdit;
+    BListados: TButton;
+    LDestino: TLabel;
+    EDestino: TEdit;
+    BDestino: TButton;
+    TVListados: TTreeView;
+    SPListados: TSplitter;
+    MLogFR: TMemo;
+    PBotonesListados: TPanel;
+    BCargarListados: TButton;
+    BConvertir: TButton;
+    LEstado: TLabel;
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure BMergeClick(Sender: TObject);
+    procedure BProyectoClick(Sender: TObject);
+    procedure BListadosClick(Sender: TObject);
+    procedure BDestinoClick(Sender: TObject);
+    procedure BCargarModulosClick(Sender: TObject);
+    procedure BImportarClick(Sender: TObject);
+    procedure BMarcarNadaClick(Sender: TObject);
+    procedure BCargarListadosClick(Sender: TObject);
+    procedure BConvertirClick(Sender: TObject);
+    procedure TVMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+  private
+    FRutas: TStringList;       // ruta de cada nodo (Node.Data = índice + 1)
+    function EligeCarpeta(const Actual: string): string;
+    procedure LogModulos(const S: string);
+    procedure LogListados(const S: string);
+    function RutaNodo(N: TTreeNode): string;
+    function NodoCarpeta(TV: TTreeView; const Raiz, Carpeta: string; Cache: TDictionary<string, TTreeNode>): TTreeNode;
+    procedure MarcaHijos(N: TTreeNode; Marcado: Boolean);
+    function ProyectoPorDefecto: string;
+  end;
+
+var
+  FMImportador: TFMImportador;
+
+implementation
+
+{$R *.dfm}
+
+uses
+  System.IOUtils, System.StrUtils, System.RegularExpressions, UEntorno, UDMMain, UImpConversor, UImpFR, UImpDfm;
+
+procedure TFMImportador.FormCreate(Sender: TObject);
+begin
+  FRutas := TStringList.Create;
+  EMerge.Text := LeeDatoIni('Importador', 'CarpetaMerge', '');
+  EProyecto.Text := LeeDatoIni('Importador', 'CarpetaProyecto', ProyectoPorDefecto);
+  EListados.Text := LeeDatoIni('Importador', 'CarpetaListados', IfThen(EMerge.Text <> '', TPath.Combine(EMerge.Text, 'Listados'), ''));
+  EDestino.Text := LeeDatoIni('Importador', 'CarpetaDestinoListados', IfThen(EProyecto.Text <> '', TPath.Combine(EProyecto.Text, 'Listados'), ''));
+  PC.ActivePage := TSModulos;
+end;
+
+procedure TFMImportador.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  EscribeDatoIni('Importador', 'CarpetaMerge', EMerge.Text);
+  EscribeDatoIni('Importador', 'CarpetaProyecto', EProyecto.Text);
+  EscribeDatoIni('Importador', 'CarpetaListados', EListados.Text);
+  EscribeDatoIni('Importador', 'CarpetaDestinoListados', EDestino.Text);
+  FRutas.Free;
+  Action := caFree;
+  FMImportador := nil;
+end;
+
+function TFMImportador.ProyectoPorDefecto: string;
+// Carpeta con Merge13.dpr: la del exe o alguna superior (el exe suele estar en _exe)
+var
+  D: string;
+begin
+  D := ExtractFilePath(ParamStr(0));
+  while D <> '' do
+  begin
+    if FileExists(TPath.Combine(D, 'Merge13.dpr')) then
+      Exit(ExcludeTrailingPathDelimiter(D));
+    if ExtractFilePath(ExcludeTrailingPathDelimiter(D)) = D then
+      Break;
+    D := ExtractFilePath(ExcludeTrailingPathDelimiter(D));
+  end;
+  Result := '';
+end;
+
+function TFMImportador.EligeCarpeta(const Actual: string): string;
+var
+  D: TFileOpenDialog;
+begin
+  Result := Actual;
+  D := TFileOpenDialog.Create(nil);
+  try
+    D.Options := [fdoPickFolders, fdoPathMustExist];
+    if DirectoryExists(Actual) then
+      D.DefaultFolder := Actual;
+    if D.Execute then
+      Result := D.FileName;
+  finally
+    D.Free;
+  end;
+end;
+
+procedure TFMImportador.BMergeClick(Sender: TObject);
+begin
+  EMerge.Text := EligeCarpeta(EMerge.Text);
+  if (EListados.Text = '') and DirectoryExists(TPath.Combine(EMerge.Text, 'Listados')) then
+    EListados.Text := TPath.Combine(EMerge.Text, 'Listados');
+  BCargarModulosClick(nil);
+end;
+
+procedure TFMImportador.BProyectoClick(Sender: TObject);
+begin
+  EProyecto.Text := EligeCarpeta(EProyecto.Text);
+end;
+
+procedure TFMImportador.BListadosClick(Sender: TObject);
+begin
+  EListados.Text := EligeCarpeta(EListados.Text);
+  BCargarListadosClick(nil);
+end;
+
+procedure TFMImportador.BDestinoClick(Sender: TObject);
+begin
+  EDestino.Text := EligeCarpeta(EDestino.Text);
+end;
+
+procedure TFMImportador.LogModulos(const S: string);
+begin
+  MLog.Lines.Add(S);
+  Application.ProcessMessages;
+end;
+
+procedure TFMImportador.LogListados(const S: string);
+begin
+  MLogFR.Lines.Add(S);
+  Application.ProcessMessages;
+end;
+
+function TFMImportador.RutaNodo(N: TTreeNode): string;
+begin
+  if (N = nil) or (N.Data = nil) then
+    Result := ''
+  else
+    Result := FRutas[NativeInt(N.Data) - 1];
+end;
+
+function TFMImportador.NodoCarpeta(TV: TTreeView; const Raiz, Carpeta: string;
+  Cache: TDictionary<string, TTreeNode>): TTreeNode;
+// Nodo de la carpeta (y de sus carpetas padre) dentro del árbol
+var
+  Rel, Padre: string;
+  NP: TTreeNode;
+begin
+  Rel := ExcludeTrailingPathDelimiter(ExtractRelativePath(IncludeTrailingPathDelimiter(Raiz), IncludeTrailingPathDelimiter(Carpeta)));
+  if (Rel = '') or (Rel = '.') then
+    Rel := '(carpeta principal)';
+  if Cache.TryGetValue(LowerCase(Rel), Result) then
+    Exit;
+  Padre := ExtractFilePath(Rel);
+  if (Padre <> '') and (Rel <> '(carpeta principal)') then
+    NP := NodoCarpeta(TV, Raiz, TPath.Combine(Raiz, ExcludeTrailingPathDelimiter(Padre)), Cache)
+  else
+    NP := nil;
+  Result := TV.Items.AddChild(NP, ExtractFileName(Rel));
+  Cache.Add(LowerCase(Rel), Result);
+end;
+
+procedure TFMImportador.BCargarModulosClick(Sender: TObject);
+// Árbol de carpetas de Merge con los formularios que se pueden importar (UFMxxx con DFM)
+var
+  F, Clase, Titulo: string;
+  Cache: TDictionary<string, TTreeNode>;
+  N: TTreeNode;
+  Total: Integer;
+  M: TMatch;
+begin
+  TVModulos.Items.BeginUpdate;
+  Cache := TDictionary<string, TTreeNode>.Create;
+  try
+    TVModulos.Items.Clear;
+    FRutas.Clear;
+    Total := 0;
+    if not DirectoryExists(EMerge.Text) then
+      Exit;
+    for F in TDirectory.GetFiles(EMerge.Text, 'UFM*.pas', TSearchOption.soAllDirectories) do
+    begin
+      if not FileExists(ChangeFileExt(F, '.dfm')) then
+        Continue;
+      Clase := '';
+      Titulo := '';
+      // título de la ventana para que se reconozca el módulo
+      M := TRegEx.Match(TFile.ReadAllText(ChangeFileExt(F, '.dfm'), TEncoding.ANSI), '^\s*Caption\s*=\s*(.*)$', [roMultiLine]);
+      if M.Success then
+        Titulo := SinComillas(Trim(M.Groups[1].Value));
+      N := TVModulos.Items.AddChild(NodoCarpeta(TVModulos, EMerge.Text, ExtractFilePath(F), Cache),
+        TPath.GetFileNameWithoutExtension(F) + IfThen(Titulo <> '', '  —  ' + Titulo));
+      FRutas.Add(F);
+      N.Data := Pointer(NativeInt(FRutas.Count));
+      Inc(Total);
+    end;
+    TVModulos.AlphaSort(True);
+    LEstado.Caption := Format('%d formularios de Merge en %d carpetas', [Total, Cache.Count]);
+  finally
+    Cache.Free;
+    TVModulos.Items.EndUpdate;
+  end;
+end;
+
+procedure TFMImportador.MarcaHijos(N: TTreeNode; Marcado: Boolean);
+var
+  H: TTreeNode;
+begin
+  H := N.getFirstChild;
+  while H <> nil do
+  begin
+    H.Checked := Marcado;
+    MarcaHijos(H, Marcado);
+    H := N.GetNextChild(H);
+  end;
+end;
+
+procedure TFMImportador.TVMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+// Marcar una carpeta marca todo lo que contiene
+var
+  N: TTreeNode;
+begin
+  N := TTreeView(Sender).GetNodeAt(X, Y);
+  if (N <> nil) and (htOnStateIcon in TTreeView(Sender).GetHitTestInfoAt(X, Y)) and N.HasChildren then
+    MarcaHijos(N, N.Checked);
+end;
+
+procedure TFMImportador.BMarcarNadaClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to TVModulos.Items.Count - 1 do
+    TVModulos.Items[i].Checked := False;
+end;
+
+procedure TFMImportador.BImportarClick(Sender: TObject);
+var
+  Imp: TImportador;
+  i, Hechos, Fallos: Integer;
+  N: TTreeNode;
+  U: string;
+begin
+  if not FileExists(TPath.Combine(EProyecto.Text, 'Merge13.dpr')) then
+  begin
+    ShowMessage('La carpeta del proyecto debe ser la que contiene Merge13.dpr');
+    Exit;
+  end;
+  if not DMMain.DataBase.Connected then
+    LogModulos('AVISO: sin conexión a la base de datos; los tipos de campo se deducirán de Merge (mejor conectar antes).');
+  MLog.Clear;
+  Hechos := 0;
+  Fallos := 0;
+  Screen.Cursor := crHourGlass;
+  Imp := TImportador.Create(EMerge.Text, EProyecto.Text, DMMain.DataBase, LogModulos, CBSinTeeChart.Checked);
+  try
+    for i := 0 to TVModulos.Items.Count - 1 do
+    begin
+      N := TVModulos.Items[i];
+      if not N.Checked or (RutaNodo(N) = '') then
+        Continue;
+      U := TPath.GetFileNameWithoutExtension(RutaNodo(N));
+      LogModulos('=== ' + U);
+      try
+        Imp.ImportaModulo(U);
+        Inc(Hechos);
+        for var R in Imp.Revisiones do
+          LogModulos('   revisar: ' + R);
+      except
+        on E: Exception do
+        begin
+          Inc(Fallos);
+          LogModulos('   ERROR: ' + E.ClassName + ': ' + E.Message);
+        end;
+      end;
+    end;
+  finally
+    Imp.Free;
+    Screen.Cursor := crDefault;
+  end;
+  LogModulos(Format('Terminado: %d importados, %d con error. Compilar Merge13 para incluirlos.', [Hechos, Fallos]));
+end;
+
+procedure TFMImportador.BCargarListadosClick(Sender: TObject);
+var
+  F: string;
+  Cache: TDictionary<string, TTreeNode>;
+  N: TTreeNode;
+  Total: Integer;
+begin
+  TVListados.Items.BeginUpdate;
+  Cache := TDictionary<string, TTreeNode>.Create;
+  try
+    TVListados.Items.Clear;
+    Total := 0;
+    if not DirectoryExists(EListados.Text) then
+      Exit;
+    for F in TDirectory.GetFiles(EListados.Text, '*.*', TSearchOption.soAllDirectories) do
+      if EsListado(F) then
+      begin
+        N := TVListados.Items.AddChild(NodoCarpeta(TVListados, EListados.Text, ExtractFilePath(F), Cache), ExtractFileName(F));
+        FRutas.Add(F);
+        N.Data := Pointer(NativeInt(FRutas.Count));
+        Inc(Total);
+      end;
+    TVListados.AlphaSort(True);
+    LEstado.Caption := Format('%d listados', [Total]);
+  finally
+    Cache.Free;
+    TVListados.Items.EndUpdate;
+  end;
+end;
+
+procedure TFMImportador.BConvertirClick(Sender: TObject);
+var
+  i, Hechos, Fallos: Integer;
+  N: TTreeNode;
+  Origen, Destino: string;
+begin
+  MLogFR.Clear;
+  Hechos := 0;
+  Fallos := 0;
+  Screen.Cursor := crHourGlass;
+  try
+    for i := 0 to TVListados.Items.Count - 1 do
+    begin
+      N := TVListados.Items[i];
+      Origen := RutaNodo(N);
+      if not N.Checked or (Origen = '') then
+        Continue;
+      Destino := TPath.Combine(EDestino.Text, ExtractRelativePath(IncludeTrailingPathDelimiter(EListados.Text), Origen));
+      if ConvierteListado(Origen, Destino, LogListados) then
+      begin
+        Inc(Hechos);
+        LogListados('OK ' + ExtractFileName(Origen) + ' -> ' + ChangeFileExt(Destino, '.fr3'));
+      end
+      else
+        Inc(Fallos);
+    end;
+  finally
+    Screen.Cursor := crDefault;
+  end;
+  LogListados(Format('Terminado: %d convertidos, %d sin convertir.', [Hechos, Fallos]));
+end;
+
+end.
