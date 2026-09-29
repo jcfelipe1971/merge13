@@ -1,317 +1,110 @@
-[2026-09-27 18:31:03.920] FMain.FormCreate
-[2026-09-27 18:32:01.730] DMMain.Conectar
-[2026-09-27 18:32:01.736] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:32:01.740] Usuario: SYSDBA
-[2026-09-27 18:32:01.744] Clave: *********
-[2026-09-27 18:32:01.748] Rol: 
-[2026-09-27 18:32:01.751] CharacterSet: WIN1252
-[2026-09-27 18:32:01.756] Version Firebird: 5
-[2026-09-27 18:32:45.282] DMMain.Conectar
-[2026-09-27 18:32:45.287] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:32:45.290] Usuario: SYSDBA
-[2026-09-27 18:32:45.295] Clave: *********
-[2026-09-27 18:32:45.298] Rol: 
-[2026-09-27 18:32:45.302] CharacterSet: WIN1252
-[2026-09-27 18:32:45.306] Version Firebird: 5
-[2026-09-27 18:33:03.703] FMain.FormCreate
-[2026-09-27 18:33:24.834] DMMain.Conectar
-[2026-09-27 18:33:24.838] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:33:24.843] Usuario: SYSDBA
-[2026-09-27 18:33:24.847] Clave: *********
-[2026-09-27 18:33:24.851] Rol: 
-[2026-09-27 18:33:24.856] CharacterSet: WIN1252
-[2026-09-27 18:33:24.860] Version Firebird: 5
-[2026-09-27 18:34:17.834] DMMain.Conectar
-[2026-09-27 18:34:17.841] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:34:17.845] Usuario: SYSDBA
-[2026-09-27 18:34:17.849] Clave: *********
-[2026-09-27 18:34:17.853] Rol: 
-[2026-09-27 18:34:17.856] CharacterSet: WIN1252
-[2026-09-27 18:34:17.861] Version Firebird: 5
-[2026-09-27 18:34:36.219] DMMain.Conectar
-[2026-09-27 18:34:36.225] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:34:36.229] Usuario: SYSDBA
-[2026-09-27 18:34:36.233] Clave: *********
-[2026-09-27 18:34:36.236] Rol: 
-[2026-09-27 18:34:36.241] CharacterSet: WIN1252
-[2026-09-27 18:34:36.245] Version Firebird: 5
-[2026-09-27 18:35:00.186] DMMain.Conectar
-[2026-09-27 18:35:00.194] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:35:00.198] Usuario: SYSDBA
-[2026-09-27 18:35:00.202] Clave: *********
-[2026-09-27 18:35:00.206] Rol: 
-[2026-09-27 18:35:00.210] CharacterSet: WIN1252
-[2026-09-27 18:35:00.214] Version Firebird: 5
-[2026-09-27 18:35:07.170] DMMain.Conectar
-[2026-09-27 18:35:07.175] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:35:07.180] Usuario: SYSDBA
-[2026-09-27 18:35:07.184] Clave: *********
-[2026-09-27 18:35:07.189] Rol: 
-[2026-09-27 18:35:07.193] CharacterSet: WIN1252
-[2026-09-27 18:35:07.197] Version Firebird: 5
-[2026-09-27 18:36:44.502] FMain.FormCreate
-[2026-09-27 18:37:15.262] DMMain.Conectar
-[2026-09-27 18:37:15.267] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 18:37:15.271] Usuario: SYSDBA
-[2026-09-27 18:37:15.276] Clave: *********
-[2026-09-27 18:37:15.280] Rol: 
-[2026-09-27 18:37:15.284] CharacterSet: WIN1252
-[2026-09-27 18:37:15.289] Version Firebird: 5
-[2026-09-27 19:20:30.753] FMain.FormCreate
-[2026-09-27 19:21:19.754] DMMain.Conectar
-[2026-09-27 19:21:20.035] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:21:20.285] Usuario: SYSDBA
-[2026-09-27 19:21:20.551] Clave: *********
-[2026-09-27 19:21:20.925] Rol: 
-[2026-09-27 19:21:21.613] CharacterSet: WIN1252
-[2026-09-27 19:21:22.254] Version Firebird: 5
-[2026-09-27 19:28:08.029] FMain.FormCreate
-[2026-09-27 19:28:27.685] DMMain.Conectar
-[2026-09-27 19:28:27.685] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:28:27.685] Usuario: SYSDBA
-[2026-09-27 19:28:27.685] Clave: *********
-[2026-09-27 19:28:27.701] Rol: 
-[2026-09-27 19:28:27.701] CharacterSet: WIN1252
-[2026-09-27 19:28:27.701] Version Firebird: 5
-[2026-09-27 19:29:28.904] DMMain.Conectar
-[2026-09-27 19:29:28.920] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:29:28.920] Usuario: SYSDBA
-[2026-09-27 19:29:28.920] Clave: *********
-[2026-09-27 19:29:28.920] Rol: 
-[2026-09-27 19:29:28.935] CharacterSet: WIN1252
-[2026-09-27 19:29:28.935] Version Firebird: 5
-[2026-09-27 19:29:36.232] DMMain.Login
-[2026-09-27 19:29:36.232] Usuario: ADMIN
-[2026-09-27 19:29:36.232] Password: *
-[2026-09-27 19:31:53.377] FMain.FormCreate
-[2026-09-27 19:31:53.424] DMMain.Conectar
-[2026-09-27 19:31:53.424] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:31:53.424] Usuario: SYSDBA
-[2026-09-27 19:31:53.439] Clave: *********
-[2026-09-27 19:31:53.439] Rol: 
-[2026-09-27 19:31:53.439] CharacterSet: WIN1252
-[2026-09-27 19:31:53.455] Version Firebird: 5
-[2026-09-27 19:31:55.298] DMMain.Login
-[2026-09-27 19:31:55.298] Usuario: ADMIN
-[2026-09-27 19:31:55.298] Password: *
-[2026-09-27 19:32:08.685] FMain.FormCreate
-[2026-09-27 19:32:08.717] DMMain.Conectar
-[2026-09-27 19:32:08.732] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:32:08.732] Usuario: SYSDBA
-[2026-09-27 19:32:08.732] Clave: *********
-[2026-09-27 19:32:08.748] Rol: 
-[2026-09-27 19:32:08.748] CharacterSet: WIN1252
-[2026-09-27 19:32:08.748] Version Firebird: 5
-[2026-09-27 19:32:10.451] DMMain.Login
-[2026-09-27 19:32:10.451] Usuario: ADMIN
-[2026-09-27 19:32:10.451] Password: *
-[2026-09-27 19:53:54.431] FMain.FormCreate
-[2026-09-27 19:53:54.468] DMMain.Conectar
-[2026-09-27 19:53:54.473] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 19:53:54.478] Usuario: SYSDBA
-[2026-09-27 19:53:54.483] Clave: *********
-[2026-09-27 19:53:54.487] Rol: 
-[2026-09-27 19:53:54.491] CharacterSet: WIN1252
-[2026-09-27 19:53:54.495] Version Firebird: 5
-[2026-09-27 19:53:56.443] DMMain.Login
-[2026-09-27 19:53:56.448] Usuario: ADMIN
-[2026-09-27 19:53:56.453] Password: *
-[2026-09-27 19:55:13.324] FMain.FormCreate
-[2026-09-27 20:17:21.016] FMain.FormCreate
-[2026-09-27 20:17:21.052] DMMain.Conectar
-[2026-09-27 20:17:21.057] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 20:17:21.062] Usuario: SYSDBA
-[2026-09-27 20:17:21.067] Clave: *********
-[2026-09-27 20:17:21.072] Rol: 
-[2026-09-27 20:17:21.075] CharacterSet: WIN1252
-[2026-09-27 20:17:21.081] Version Firebird: 5
-[2026-09-27 20:17:22.419] DMMain.Login
-[2026-09-27 20:17:22.424] Usuario: ADMIN
-[2026-09-27 20:17:22.428] Password: *
-[2026-09-27 20:18:51.466] FMain.FormCreate
-[2026-09-27 20:18:51.495] DMMain.Conectar
-[2026-09-27 20:18:51.500] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 20:18:51.505] Usuario: SYSDBA
-[2026-09-27 20:18:51.510] Clave: *********
-[2026-09-27 20:18:51.515] Rol: 
-[2026-09-27 20:18:51.520] CharacterSet: WIN1252
-[2026-09-27 20:18:51.525] Version Firebird: 5
-[2026-09-27 20:18:52.706] DMMain.Login
-[2026-09-27 20:18:52.711] Usuario: ADMIN
-[2026-09-27 20:18:52.716] Password: *
-[2026-09-27 21:02:08.257] FMain.FormCreate
-[2026-09-27 21:02:08.288] DMMain.Conectar
-[2026-09-27 21:02:08.304] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:02:08.304] Usuario: SYSDBA
-[2026-09-27 21:02:08.304] Clave: *********
-[2026-09-27 21:02:08.320] Rol: 
-[2026-09-27 21:02:08.320] CharacterSet: WIN1252
-[2026-09-27 21:02:08.320] Version Firebird: 5
-[2026-09-27 21:02:10.806] DMMain.Login
-[2026-09-27 21:02:10.822] Usuario: ADMIN
-[2026-09-27 21:02:10.822] Password: *
-[2026-09-27 21:09:49.367] FMain.FormCreate
-[2026-09-27 21:09:49.413] DMMain.Conectar
-[2026-09-27 21:09:49.413] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:09:49.413] Usuario: SYSDBA
-[2026-09-27 21:09:49.429] Clave: *********
-[2026-09-27 21:09:49.429] Rol: 
-[2026-09-27 21:09:49.429] CharacterSet: WIN1252
-[2026-09-27 21:09:49.429] Version Firebird: 5
-[2026-09-27 21:09:51.100] DMMain.Login
-[2026-09-27 21:09:51.116] Usuario: ADMIN
-[2026-09-27 21:09:51.116] Password: *
-[2026-09-27 21:14:01.613] FMain.FormCreate
-[2026-09-27 21:14:01.660] DMMain.Conectar
-[2026-09-27 21:14:01.660] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:14:01.660] Usuario: SYSDBA
-[2026-09-27 21:14:01.676] Clave: *********
-[2026-09-27 21:14:01.676] Rol: 
-[2026-09-27 21:14:01.676] CharacterSet: WIN1252
-[2026-09-27 21:14:01.691] Version Firebird: 5
-[2026-09-27 21:14:03.238] DMMain.Login
-[2026-09-27 21:14:03.238] Usuario: ADMIN
-[2026-09-27 21:14:03.238] Password: *
-[2026-09-27 21:14:47.639] FMain.FormCreate
-[2026-09-27 21:14:47.671] DMMain.Conectar
-[2026-09-27 21:14:47.686] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:14:47.686] Usuario: SYSDBA
-[2026-09-27 21:14:47.686] Clave: *********
-[2026-09-27 21:14:47.702] Rol: 
-[2026-09-27 21:14:47.702] CharacterSet: WIN1252
-[2026-09-27 21:14:47.702] Version Firebird: 5
-[2026-09-27 21:14:49.143] DMMain.Login
-[2026-09-27 21:14:49.143] Usuario: ADMIN
-[2026-09-27 21:14:49.158] Password: *
-[2026-09-27 21:15:52.328] FMain.FormCreate
-[2026-09-27 21:15:52.375] DMMain.Conectar
-[2026-09-27 21:15:52.375] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:15:52.375] Usuario: SYSDBA
-[2026-09-27 21:15:52.391] Clave: *********
-[2026-09-27 21:15:52.391] Rol: 
-[2026-09-27 21:15:52.391] CharacterSet: WIN1252
-[2026-09-27 21:15:52.406] Version Firebird: 5
-[2026-09-27 21:15:53.578] DMMain.Login
-[2026-09-27 21:15:53.578] Usuario: ADMIN
-[2026-09-27 21:15:53.578] Password: *
-[2026-09-27 21:36:30.414] FMain.FormCreate
-[2026-09-27 21:36:30.446] DMMain.Conectar
-[2026-09-27 21:36:30.446] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:36:30.461] Usuario: SYSDBA
-[2026-09-27 21:36:30.461] Clave: *********
-[2026-09-27 21:36:30.461] Rol: 
-[2026-09-27 21:36:30.477] CharacterSet: WIN1252
-[2026-09-27 21:36:30.477] Version Firebird: 5
-[2026-09-27 21:36:31.805] DMMain.Login
-[2026-09-27 21:36:31.805] Usuario: ADMIN
-[2026-09-27 21:36:31.820] Password: *
-[2026-09-27 21:52:55.549] FMain.FormCreate
-[2026-09-27 21:52:55.580] DMMain.Conectar
-[2026-09-27 21:52:55.580] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:52:55.596] Usuario: SYSDBA
-[2026-09-27 21:52:55.596] Clave: *********
-[2026-09-27 21:52:55.596] Rol: 
-[2026-09-27 21:52:55.611] CharacterSet: WIN1252
-[2026-09-27 21:52:55.611] Version Firebird: 5
-[2026-09-27 21:52:56.924] DMMain.Login
-[2026-09-27 21:52:56.924] Usuario: ADMIN
-[2026-09-27 21:52:56.924] Password: *
-[2026-09-27 21:54:10.969] FMain.FormCreate
-[2026-09-27 21:54:11.001] DMMain.Conectar
-[2026-09-27 21:54:11.016] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:54:11.016] Usuario: SYSDBA
-[2026-09-27 21:54:11.016] Clave: *********
-[2026-09-27 21:54:11.032] Rol: 
-[2026-09-27 21:54:11.032] CharacterSet: WIN1252
-[2026-09-27 21:54:11.032] Version Firebird: 5
-[2026-09-27 21:54:12.844] DMMain.Login
-[2026-09-27 21:54:12.844] Usuario: ADMIN
-[2026-09-27 21:54:12.859] Password: *
-[2026-09-27 21:55:46.158] FMain.FormCreate
-[2026-09-27 21:55:46.189] DMMain.Conectar
-[2026-09-27 21:55:46.205] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:55:46.205] Usuario: SYSDBA
-[2026-09-27 21:55:46.205] Clave: *********
-[2026-09-27 21:55:46.220] Rol: 
-[2026-09-27 21:55:46.220] CharacterSet: WIN1252
-[2026-09-27 21:55:46.220] Version Firebird: 5
-[2026-09-27 21:55:47.580] DMMain.Login
-[2026-09-27 21:55:47.580] Usuario: ADMIN
-[2026-09-27 21:55:47.596] Password: *
-[2026-09-27 21:57:05.783] FMain.FormCreate
-[2026-09-27 21:57:05.830] DMMain.Conectar
-[2026-09-27 21:57:05.830] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 21:57:05.830] Usuario: SYSDBA
-[2026-09-27 21:57:05.845] Clave: *********
-[2026-09-27 21:57:05.845] Rol: 
-[2026-09-27 21:57:05.845] CharacterSet: WIN1252
-[2026-09-27 21:57:05.861] Version Firebird: 5
-[2026-09-27 21:57:07.392] DMMain.Login
-[2026-09-27 21:57:07.408] Usuario: ADMIN
-[2026-09-27 21:57:07.408] Password: *
-[2026-09-27 22:00:04.130] FMain.FormCreate
-[2026-09-27 22:00:04.177] DMMain.Conectar
-[2026-09-27 22:00:04.177] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:00:04.193] Usuario: SYSDBA
-[2026-09-27 22:00:04.193] Clave: *********
-[2026-09-27 22:00:04.193] Rol: 
-[2026-09-27 22:00:04.208] CharacterSet: WIN1252
-[2026-09-27 22:00:04.208] Version Firebird: 5
-[2026-09-27 22:00:05.770] DMMain.Login
-[2026-09-27 22:00:05.770] Usuario: ADMIN
-[2026-09-27 22:00:05.770] Password: *
-[2026-09-27 22:28:48.704] FMain.FormCreate
-[2026-09-27 22:28:48.751] DMMain.Conectar
-[2026-09-27 22:28:48.751] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:28:48.751] Usuario: SYSDBA
-[2026-09-27 22:28:48.767] Clave: *********
-[2026-09-27 22:28:48.767] Rol: 
-[2026-09-27 22:28:48.767] CharacterSet: WIN1252
-[2026-09-27 22:28:48.783] Version Firebird: 5
-[2026-09-27 22:28:50.173] DMMain.Login
-[2026-09-27 22:28:50.173] Usuario: ADMIN
-[2026-09-27 22:28:50.188] Password: *
-[2026-09-27 22:29:28.985] FMain.FormCreate
-[2026-09-27 22:29:29.016] DMMain.Conectar
-[2026-09-27 22:29:29.032] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:29:29.032] Usuario: SYSDBA
-[2026-09-27 22:29:29.032] Clave: *********
-[2026-09-27 22:29:29.048] Rol: 
-[2026-09-27 22:29:29.048] CharacterSet: WIN1252
-[2026-09-27 22:29:29.048] Version Firebird: 5
-[2026-09-27 22:29:42.750] DMMain.Login
-[2026-09-27 22:29:42.750] Usuario: ADMIN
-[2026-09-27 22:29:42.750] Password: *
-[2026-09-27 22:31:46.724] FMain.FormCreate
-[2026-09-27 22:31:46.771] DMMain.Conectar
-[2026-09-27 22:31:46.771] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:31:46.787] Usuario: SYSDBA
-[2026-09-27 22:31:46.787] Clave: *********
-[2026-09-27 22:31:46.787] Rol: 
-[2026-09-27 22:31:46.802] CharacterSet: WIN1252
-[2026-09-27 22:31:46.802] Version Firebird: 5
-[2026-09-27 22:31:48.193] DMMain.Login
-[2026-09-27 22:31:48.208] Usuario: ADMIN
-[2026-09-27 22:31:48.208] Password: *
-[2026-09-27 22:32:09.251] FMain.FormCreate
-[2026-09-27 22:32:09.298] DMMain.Conectar
-[2026-09-27 22:32:09.298] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:32:09.298] Usuario: SYSDBA
-[2026-09-27 22:32:09.314] Clave: *********
-[2026-09-27 22:32:09.314] Rol: 
-[2026-09-27 22:32:09.314] CharacterSet: WIN1252
-[2026-09-27 22:32:09.329] Version Firebird: 5
-[2026-09-27 22:32:10.485] DMMain.Login
-[2026-09-27 22:32:10.485] Usuario: ADMIN
-[2026-09-27 22:32:10.501] Password: *
-[2026-09-27 22:32:32.906] FMain.FormCreate
-[2026-09-27 22:32:32.953] DMMain.Conectar
-[2026-09-27 22:32:32.953] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
-[2026-09-27 22:32:32.969] Usuario: SYSDBA
-[2026-09-27 22:32:32.969] Clave: *********
-[2026-09-27 22:32:32.969] Rol: 
-[2026-09-27 22:32:32.984] CharacterSet: WIN1252
-[2026-09-27 22:32:32.984] Version Firebird: 5
-[2026-09-27 22:33:06.690] DMMain.Login
-[2026-09-27 22:33:06.705] Usuario: ADMIN
-[2026-09-27 22:33:06.705] Password: *
+[2026-09-29 14:53:44.616] FMain.FormCreate
+[2026-09-29 14:54:32.431] DMMain.Conectar
+[2026-09-29 14:54:32.441] Base de Datos: C:\Delfos\Datos\ARMTEX-DEMO.FDB
+[2026-09-29 14:54:32.448] Usuario: SYSDBA
+[2026-09-29 14:54:32.449] Clave: *********
+[2026-09-29 14:54:32.449] Rol: 
+[2026-09-29 14:54:32.462] CharacterSet: WIN1252
+[2026-09-29 14:54:32.468] Version Firebird: 5
+[2026-09-29 14:56:07.349] DMMain.Login
+[2026-09-29 14:56:07.359] Usuario: ADMIN
+[2026-09-29 14:56:07.366] Password: *
+[2026-09-29 14:56:16.158] FMain.FormCreate
+[2026-09-29 14:56:16.322] DMMain.Conectar
+[2026-09-29 14:56:16.329] Base de Datos: C:\Delfos\Datos\ARMTEX-DEMO.FDB
+[2026-09-29 14:56:16.337] Usuario: SYSDBA
+[2026-09-29 14:56:16.343] Clave: *********
+[2026-09-29 14:56:16.349] Rol: 
+[2026-09-29 14:56:16.357] CharacterSet: WIN1252
+[2026-09-29 14:56:16.365] Version Firebird: 5
+[2026-09-29 14:56:18.580] DMMain.Login
+[2026-09-29 14:56:18.589] Usuario: ADMIN
+[2026-09-29 14:56:18.597] Password: *
+[2026-09-29 14:57:04.469] FMain.FormCreate
+[2026-09-29 14:57:04.627] DMMain.Conectar
+[2026-09-29 14:57:04.639] Base de Datos: C:\Delfos\Datos\ARMTEX-DEMO.FDB
+[2026-09-29 14:57:04.646] Usuario: SYSDBA
+[2026-09-29 14:57:04.654] Clave: *********
+[2026-09-29 14:57:04.661] Rol: 
+[2026-09-29 14:57:04.670] CharacterSet: WIN1252
+[2026-09-29 14:57:04.676] Version Firebird: 5
+[2026-09-29 14:57:06.675] DMMain.Login
+[2026-09-29 14:57:06.687] Usuario: ADMIN
+[2026-09-29 14:57:06.697] Password: *
+[2026-09-29 14:57:29.298] FMain.FormCreate
+[2026-09-29 14:57:29.444] DMMain.Conectar
+[2026-09-29 14:57:29.450] Base de Datos: C:\Delfos\Datos\ARMTEX-DEMO.FDB
+[2026-09-29 14:57:29.458] Usuario: SYSDBA
+[2026-09-29 14:57:29.465] Clave: *********
+[2026-09-29 14:57:29.471] Rol: 
+[2026-09-29 14:57:29.478] CharacterSet: WIN1252
+[2026-09-29 14:57:29.483] Version Firebird: 5
+[2026-09-29 14:57:31.517] DMMain.Login
+[2026-09-29 14:57:31.528] Usuario: ADMIN
+[2026-09-29 14:57:31.539] Password: *
+[2026-09-29 09:05:09.666] FMain.FormCreate
+[2026-09-29 09:05:09.698] DMMain.Conectar
+[2026-09-29 09:05:09.713] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 09:05:09.713] Usuario: SYSDBA
+[2026-09-29 09:05:09.713] Clave: *********
+[2026-09-29 09:05:09.713] Rol: 
+[2026-09-29 09:05:09.729] CharacterSet: WIN1252
+[2026-09-29 09:05:09.729] Version Firebird: 5
+[2026-09-29 09:05:11.329] DMMain.Login
+[2026-09-29 09:05:11.329] Usuario: ADMIN
+[2026-09-29 09:05:11.344] Password: *
+[2026-09-29 09:07:38.449] FMain.FormCreate
+[2026-09-29 09:07:38.521] DMMain.Conectar
+[2026-09-29 09:07:38.521] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 09:07:38.532] Usuario: SYSDBA
+[2026-09-29 09:07:38.532] Clave: *********
+[2026-09-29 09:07:38.542] Rol: 
+[2026-09-29 09:07:38.542] CharacterSet: WIN1252
+[2026-09-29 09:07:38.550] Version Firebird: 5
+[2026-09-29 09:07:40.185] DMMain.Login
+[2026-09-29 09:07:40.195] Usuario: ADMIN
+[2026-09-29 09:07:40.195] Password: *
+[2026-09-29 09:31:19.075] FMain.FormCreate
+[2026-09-29 09:31:19.153] DMMain.Conectar
+[2026-09-29 09:31:19.153] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 09:31:19.153] Usuario: SYSDBA
+[2026-09-29 09:31:19.168] Clave: *********
+[2026-09-29 09:31:19.168] Rol: 
+[2026-09-29 09:31:19.168] CharacterSet: WIN1252
+[2026-09-29 09:31:19.184] Version Firebird: 5
+[2026-09-29 09:31:20.837] DMMain.Login
+[2026-09-29 09:31:20.837] Usuario: ADMIN
+[2026-09-29 09:31:20.853] Password: *
+[2026-09-29 09:31:54.126] FMain.FormCreate
+[2026-09-29 09:31:54.189] DMMain.Conectar
+[2026-09-29 09:31:54.204] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 09:31:54.204] Usuario: SYSDBA
+[2026-09-29 09:31:54.204] Clave: *********
+[2026-09-29 09:31:54.220] Rol: 
+[2026-09-29 09:31:54.220] CharacterSet: WIN1252
+[2026-09-29 09:31:54.220] Version Firebird: 5
+[2026-09-29 09:31:55.845] DMMain.Login
+[2026-09-29 09:31:55.860] Usuario: ADMIN
+[2026-09-29 09:31:55.860] Password: *
+[2026-09-29 10:14:52.110] FMain.FormCreate
+[2026-09-29 10:14:52.151] DMMain.Conectar
+[2026-09-29 10:14:52.157] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 10:14:52.161] Usuario: SYSDBA
+[2026-09-29 10:14:52.166] Clave: *********
+[2026-09-29 10:14:52.170] Rol: 
+[2026-09-29 10:14:52.175] CharacterSet: WIN1252
+[2026-09-29 10:14:52.179] Version Firebird: 5
+[2026-09-29 10:14:53.701] DMMain.Login
+[2026-09-29 10:14:53.707] Usuario: ADMIN
+[2026-09-29 10:14:53.711] Password: *
+[2026-09-29 10:15:19.155] FMain.FormCreate
+[2026-09-29 10:15:19.231] DMMain.Conectar
+[2026-09-29 10:15:19.236] Base de Datos: D:\DELFOS\Virtual\datos\VIKTUS.FDB
+[2026-09-29 10:15:19.240] Usuario: SYSDBA
+[2026-09-29 10:15:19.244] Clave: *********
+[2026-09-29 10:15:19.249] Rol: 
+[2026-09-29 10:15:19.253] CharacterSet: WIN1252
+[2026-09-29 10:15:19.257] Version Firebird: 5
+[2026-09-29 10:15:20.648] DMMain.Login
+[2026-09-29 10:15:20.653] Usuario: ADMIN
+[2026-09-29 10:15:20.658] Password: *

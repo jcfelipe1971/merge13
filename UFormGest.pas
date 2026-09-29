@@ -21,7 +21,7 @@ procedure EnfocaControl(Control: TWinControl);
 implementation
 
 uses
-  UFMain, UDMMain, UEntorno;
+  Data.DB, FireDAC.Comp.Client, UFMain, UDMMain, UEntorno;
 
 type
   // Vigila un formulario: cuando se destruye pone a nil su variable global (FMProveedores...) y quita su pestaña
@@ -39,6 +39,8 @@ var
   Tab: TTabSheet;
 begin
   inherited;
+  if (Operation = opRemove) and (AComponent = FTab) then
+    FTab := nil;   // la pestaña se ha liberado antes que el formulario
   if (Operation = opRemove) and (AComponent = FForm) then
   begin
     if (FRef <> nil) and (FRef^ = Pointer(FForm)) then
@@ -74,6 +76,7 @@ begin
     Tab.PageControl := FMain.PCMain;
     Tab.Caption := F.Caption;
     V.FTab := Tab;
+    Tab.FreeNotification(V);
     F.BorderStyle := bsNone;
     F.Parent := Tab;
     F.Align := alClient;
@@ -116,8 +119,6 @@ begin
     TForm(Form).Close;
 end;
 
-
-
 procedure AbreData(Clase: TComponentClass; var Referencia);
 begin
   // Módulo compartido con contador de uso en Tag (igual que Merge)
@@ -135,6 +136,30 @@ begin
   TComponent(Referencia) := Clase.Create(Padre);
 end;
 
+procedure CierraModuloDatos(DM: TComponent);
+// Antes de destruir un módulo de datos se cierran sus consultas y se terminan sus transacciones activas.
+// Si se destruye con transacciones abiertas (p.ej. TLocal.StartTransaction de Merge), la conexión compartida de
+// FireDAC puede quedar con referencias a objetos ya liberados y fallar al volver a abrir el módulo.
+var
+  i: Integer;
+begin
+  for i := 0 to DM.ComponentCount - 1 do
+    if DM.Components[i] is TDataSet then
+      try
+        TDataSet(DM.Components[i]).Close;
+      except
+      end;
+  for i := 0 to DM.ComponentCount - 1 do
+    if (DM.Components[i] is TFDTransaction) and TFDTransaction(DM.Components[i]).Active then
+      try
+        if TFDTransaction(DM.Components[i]).Options.ReadOnly then
+          TFDTransaction(DM.Components[i]).Commit
+        else
+          TFDTransaction(DM.Components[i]).Rollback;
+      except
+      end;
+end;
+
 procedure CierraData(var DModuloPar);
 var
   DM: TComponent;
@@ -148,6 +173,7 @@ begin
   if DM.Tag < 0 then
   begin
     TComponent(DModuloPar) := nil;
+    CierraModuloDatos(DM);
     DM.Free;
   end;
 end;

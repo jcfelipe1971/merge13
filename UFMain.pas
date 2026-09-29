@@ -39,6 +39,7 @@ type
     BVentanas: TButton;
     BSistema: TButton;
     BAuxiliares: TButton;
+    BImportador: TButton;
     StatusBar1: TStatusBar;
     SplitViewSistema: TSplitView;
     PNLConfiguracion: TPanel;
@@ -804,6 +805,7 @@ type
     procedure Acercade1Click(Sender: TObject);
     procedure BAuxiliaresClick(Sender: TObject);
     procedure BConectarClick(Sender: TObject);
+    procedure BImportadorClick(Sender: TObject);
     procedure BMenuClick(Sender: TObject);
     procedure BModificarEntornoClick(Sender: TObject);
     procedure BSesionClick(Sender: TObject);
@@ -868,7 +870,7 @@ implementation
 {$R *.dfm}
 
 uses
-  UEntorno, UDMMain, UUtiles, ULog, UFMLogin, UFMAcerca, UModulos, gnugettext, UMensajesDeError;
+  UEntorno, UDMMain, UUtiles, ULog, UFMLogin, UFMAcerca, UModulos, {IDIOMA_CODE} gnugettext {IDIOMA_CODE}, UMensajesDeError, UFMImportador;
 
 function NombreValido(const S: string): string;
 var
@@ -1222,8 +1224,13 @@ begin
           format('Esta seguro que desea cerrar %s?', [PCMain.Pages[TabIndex].Caption]), 'Cancelar', 'Aceptar', 0) = mrok
         then
         begin
-          FM.DeleteForm(FM.GetFormByName(PCMain.Pages[TabIndex].Name));
-          PCMain.Pages[TabIndex].Free;
+          if (PCMain.Pages[TabIndex].ControlCount > 0) and (PCMain.Pages[TabIndex].Controls[0] is TForm) then
+            TForm(PCMain.Pages[TabIndex].Controls[0]).Close
+          else
+          begin
+            FM.DeleteForm(FM.GetFormByName(PCMain.Pages[TabIndex].Name));
+            PCMain.Pages[TabIndex].Free;
+          end;
         end;
       end;
     end;
@@ -1649,6 +1656,15 @@ begin
     // Enviar el mensaje WM_CLOSE para cerrar la otra instancia
     PostMessage(WindowHandle, WM_CLOSE, 0, 0);
   end;
+end;
+
+procedure TFMain.BImportadorClick(Sender: TObject);
+begin
+  // Importador de módulos y listados de Merge (ventana independiente)
+  if FMImportador = nil then
+    FMImportador := TFMImportador.Create(Application);
+  FMImportador.Show;
+  FMImportador.BringToFront;
 end;
 
 end.

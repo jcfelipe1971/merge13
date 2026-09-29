@@ -344,6 +344,27 @@ object FMain: TFMain
       TabOrder = 3
       OnClick = BAuxiliaresClick
     end
+    object BImportador: TButton
+      AlignWithMargins = True
+      Top = 5
+      Width = 19
+      Height = 19
+      Margins.Left = 5
+      Margins.Top = 5
+      Margins.Right = 5
+      Margins.Bottom = 5
+      Align = alLeft
+      BiDiMode = bdLeftToRight
+      ImageIndex = 14
+      Images = IM16
+      ParentBiDiMode = False
+      PopupMenu = PMAuxiliares
+      TabOrder = 3
+      Left = 92
+      Hint = 'Importador de Merge (módulos y listados)'
+      ShowHint = True
+      OnClick = BImportadorClick
+    end
   end
   object StatusBar1: TStatusBar
     Left = 0

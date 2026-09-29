@@ -1,4 +1,4 @@
-unit UModulos;
+﻿unit UModulos;
 
 // Registro de módulos convertidos de Merge.
 // Cada módulo convertido se registra en su sección initialization:
