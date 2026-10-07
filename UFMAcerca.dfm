@@ -2125,7 +2125,7 @@ object FMAcerca: TFMAcerca
         object Label9: TLabel
           Left = 2
           Top = 17
-          Width = 210
+          Width = 67
           Height = 21
           Align = alTop
           Alignment = taCenter
@@ -2136,7 +2136,6 @@ object FMAcerca: TFMAcerca
           Font.Name = 'Segoe UI'
           Font.Style = [fsBold]
           ParentFont = False
-          ExplicitWidth = 67
         end
         object Image5: TImage
           Left = 16

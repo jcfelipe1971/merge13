@@ -1,0 +1,150 @@
+Embarcadero Delphi for Win32 compiler version 37.0
+Copyright (c) 1983,2026 Embarcadero Technologies, Inc.
+Utilidades\gnugettext.pas(520) Warning: W1000 Symbol 'MidStr' is deprecated: 'Moved to the AnsiStrings unit'
+Utilidades\gnugettext.pas(1741) Warning: W1000 Symbol 'GetWideStrProp' is deprecated: 'use GetStrProp'
+Utilidades\gnugettext.pas(1744) Warning: W1000 Symbol 'GetUnicodeStrProp' is deprecated: 'use GetStrProp'
+Utilidades\gnugettext.pas(2596) Hint: H2077 Value assigned to 'TFileLocator.FindSignaturePos' never used
+Utilidades\gnugettext.pas(2614) Warning: W1000 Symbol 'MidStr' is deprecated: 'Moved to the AnsiStrings unit'
+Utilidades\gnugettext.pas(2635) Warning: W1057 Implicit string cast from 'AnsiString' to 'string'
+Utilidades\gnugettext.pas(2635) Warning: W1058 Implicit string cast with potential data loss from 'string' to 'AnsiString'
+Utilidades\gnugettext.pas(2636) Warning: W1057 Implicit string cast from 'AnsiString' to 'string'
+Utilidades\gnugettext.pas(2640) Warning: W1057 Implicit string cast from 'AnsiString' to 'string'
+UFMFiltrar.pas(384) Hint: H2443 Inline function 'TDataSet.GetFieldCount' has not been expanded because unit 'Data.DB' is not specified in USES list
+UFMFiltrar.pas(605) Hint: H2077 Value assigned to 'EditTexto' never used
+UFMFiltrar.pas(604) Hint: H2077 Value assigned to 'EditNumerico' never used
+UFMFiltrar.pas(603) Hint: H2077 Value assigned to 'CBCondicion' never used
+UFMFiltrar.pas(602) Hint: H2077 Value assigned to 'CBColumnas' never used
+UFMFiltrar.pas(601) Hint: H2077 Value assigned to 'CBand' never used
+UFMFiltrar.pas(600) Hint: H2077 Value assigned to 'RecItem' never used
+UFMFiltrar.pas(599) Hint: H2077 Value assigned to 'GBItem' never used
+Utilidades\uMakerAi.Core.pas(235) Warning: W1035 Return value of function 'ConvertAudioFileFormat' might be undefined
+Utilidades\uMakerAi.Core.pas(461) Warning: W1035 Return value of function 'TAiMediaFile.GetContent' might be undefined
+Utilidades\uMakerAi.ToolFunctions.pas(29) Hint: H2269 Overriding virtual method 'TFunctionParamsItem.GetDisplayName' has lower visibility (private) than base class 'TCollectionItem' (protected)
+Utilidades\uMakerAi.ToolFunctions.pas(30) Hint: H2269 Overriding virtual method 'TFunctionParamsItem.SetDisplayName' has lower visibility (private) than base class 'TCollectionItem' (protected)
+Utilidades\uMakerAi.ToolFunctions.pas(591) Warning: W1036 Variable 'Funcs' might not have been initialized
+Utilidades\uMakerAi.ToolFunctions.pas(826) Warning: W1036 Variable 'I' might not have been initialized
+Utilidades\uMakerAi.ToolFunctions.pas(879) Hint: H2077 Value assigned to 'DefItem' never used
+Utilidades\uMakerAi.Chat.pas(479) Warning: W1035 Return value of function 'TAiChat.AddMessage' might be undefined
+Utilidades\uMakerAi.Chat.pas(690) Hint: H2443 Inline function 'THTTPClient.SetContentType' has not been expanded because unit 'System.NetConsts' is not specified in USES list
+Utilidades\uMakerAi.Chat.pas(848) Warning: W1058 Implicit string cast with potential data loss from 'string' to 'RawByteString'
+Utilidades\uMakerAi.Chat.pas(1264) Warning: W1035 Return value of function 'TAiChat.RemoveMesage' might be undefined
+UFMAdjuntos.pas(197) Hint: H2443 Inline function 'TFDParam.SetAsVariant' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UFMAdjuntos.pas(198) Hint: H2443 Inline function 'TFDParam.SetAsVariant' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UFMAdjuntos.pas(199) Hint: H2443 Inline function 'TFDParam.SetAsVariant' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UFMAdjuntos.pas(221) Hint: H2077 Value assigned to 'TFMAdjuntos.DameIcono' never used
+UFMAdjuntos.pas(278) Warning: W1036 Variable 'FileStream' might not have been initialized
+UUtiles.pas(461) Hint: H2077 Value assigned to 'Attachment' never used
+UUtiles.pas(768) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(783) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(896) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(1195) Warning: W1036 Variable 'FMBuscar' might not have been initialized
+UUtiles.pas(1203) Hint: H2164 Variable 'Bookmark' is declared but never used in 'LlenaComboTotales'
+UUtiles.pas(1554) Hint: H2077 Value assigned to 'DamePDFReporte' never used
+UUtiles.pas(1644) Warning: W1036 Variable 'Reporte' might not have been initialized
+UUtiles.pas(1848) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(1849) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(1994) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(1997) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(1999) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2001) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2004) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2006) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2008) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2011) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2013) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2088) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2091) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2093) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2095) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2098) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2100) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2102) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2105) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2107) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2149) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2152) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2154) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2156) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2159) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2161) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2163) Hint: H2443 Inline function 'TFDParams.GetItem' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2166) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2168) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2195) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2196) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2197) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2215) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2217) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2218) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2219) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(2489) Hint: H2077 Value assigned to 'EnMiles' never used
+UUtiles.pas(2454) Hint: H2077 Value assigned to 'EnMiles' never used
+UUtiles.pas(2348) Hint: H2077 Value assigned to 'EnMiles' never used
+UUtiles.pas(2561) Hint: H2164 Variable 'Response' is declared but never used in 'Consultarkoboldcpp'
+UUtiles.pas(2854) Warning: W1057 Implicit string cast from 'PAnsiChar' to 'string'
+UUtiles.pas(3000) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3018) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3019) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3020) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3021) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3022) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3049) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3050) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3051) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3052) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3132) Warning: W1050 WideChar reduced to byte char in set expressions.  Consider using 'CharInSet' function in 'System.SysUtils' unit, or 'TCharHelper.IsInArray' function in 'System.Character' unit.
+UUtiles.pas(3228) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3229) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3230) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3244) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtiles.pas(3245) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UFMProgreso.pas(73) Hint: H2077 Value assigned to 'TFMProgreso.DameIcono' never used
+UMensajesDeError.pas(44) Hint: H2443 Inline function 'MessageDlg' has not been expanded because unit 'System.UITypes' is not specified in USES list
+UMensajesDeError.pas(49) Hint: H2443 Inline function 'MessageDlg' has not been expanded because unit 'System.UITypes' is not specified in USES list
+UMensajesDeError.pas(136) Warning: W1050 WideChar reduced to byte char in set expressions.  Consider using 'CharInSet' function in 'System.SysUtils' unit, or 'TCharHelper.IsInArray' function in 'System.Character' unit.
+UMensajesDeError.pas(159) Warning: W1050 WideChar reduced to byte char in set expressions.  Consider using 'CharInSet' function in 'System.SysUtils' unit, or 'TCharHelper.IsInArray' function in 'System.Character' unit.
+UDMMain.pas(460) Hint: H2077 Value assigned to 'Tercero' never used
+UDMMain.pas(481) Warning: W1036 Variable 'DS' might not have been initialized
+UDMMain.pas(485) Warning: W1035 Return value of function 'TDMMain.CreaAdjunto' might be undefined
+UDMMain.pas(447) Hint: H2164 Variable 'StreamDestino' is declared but never used in 'TDMMain.CreaAdjunto'
+UDMMain.pas(447) Hint: H2164 Variable 'StreamOrigen' is declared but never used in 'TDMMain.CreaAdjunto'
+UDMMain.pas(450) Hint: H2164 Variable 'q' is declared but never used in 'TDMMain.CreaAdjunto'
+UDMMain.pas(1271) Hint: H2077 Value assigned to 'TDMMain.EliminarImagen' never used
+UDMMain.pas(1542) Warning: W1036 Variable 'ImageStream' might not have been initialized
+UDMMain.pas(1476) Warning: W1036 Variable 'ODAbrirImagen' might not have been initialized
+UDMMain.pas(1934) Warning: W1036 Variable 'LFileStream' might not have been initialized
+UDMMain.pas(2089) Hint: H2077 Value assigned to 'TDMMain.DameClientePorNIF' never used
+UDMMain.pas(2108) Hint: H2077 Value assigned to 'TDMMain.DameMarcaPorDefecto' never used
+UDMMain.pas(2357) Warning: W1058 Implicit string cast with potential data loss from 'string' to 'ShortString'
+UDMMain.pas(2468) Warning: W1035 Return value of function 'TDMMain.Contador_E' might be undefined
+UDMMain.pas(2677) Hint: H2077 Value assigned to 'TDMMain.VerificaSmtpUsuario' never used
+UDMMain.pas(2705) Hint: H2164 Variable 'RNC_Limpio' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2706) Hint: H2164 Variable 'i' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2706) Hint: H2164 Variable 'Suma' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2706) Hint: H2164 Variable 'Resto' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2706) Hint: H2164 Variable 'DigitoVerificador' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2706) Hint: H2164 Variable 'Valor' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2707) Hint: H2164 Variable 'Coeficientes' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(2708) Hint: H2164 Variable 'EsDNI' is declared but never used in 'TDMMain.VerificaDocumentoIdentificacion'
+UDMMain.pas(3030) Hint: H2443 Inline function 'RenameFile' has not been expanded because unit 'Winapi.Windows' is not specified in USES list
+UDMMain.pas(3083) Hint: H2443 Inline function 'RenameFile' has not been expanded because unit 'Winapi.Windows' is not specified in USES list
+UDMMain.pas(4177) Hint: H2164 Variable 'LQuery' is declared but never used in 'TDMMain.FDConnection1Error'
+UFMain.pas(926) Hint: H2443 Inline function 'TList.Remove' has not been expanded because unit 'System.Types' is not specified in USES list
+UFMain.pas(1243) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFMain.pas(1243) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFMain.pas(1424) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFMain.pas(1424) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFMain.pas(1445) Hint: H2164 Variable 'i' is declared but never used in 'TFMain.MenuItemClick'
+UFMain.pas(1581) Warning: W1036 Variable 'f' might not have been initialized
+UUtilGuardaConfiguracion.pas(109) Hint: H2077 Value assigned to 'col' never used
+UUtilGuardaConfiguracion.pas(138) Hint: H2077 Value assigned to 'col' never used
+UUtilGuardaConfiguracion.pas(212) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtilGuardaConfiguracion.pas(213) Hint: H2443 Inline function 'TFDParam.SetAsString' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtilGuardaConfiguracion.pas(214) Hint: H2443 Inline function 'TFDParam.SetAsInteger' has not been expanded because unit 'FireDAC.Stan.Param' is not specified in USES list
+UUtilGuardaConfiguracion.pas(388) Warning: W1036 Variable 'INI' might not have been initialized
+UUtilGuardaConfiguracion.pas(389) Warning: W1036 Variable 'TX' might not have been initialized
+UFPEditSinNavegador.pas(86) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFPEditSinNavegador.pas(86) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+UFPEditSinNavegador.pas(100) Hint: H2077 Value assigned to 'CategoryMenu' never used
+UFPEdit.pas(671) Hint: H2443 Inline function 'Point' has not been expanded because unit 'System.Types' is not specified in USES list
+120708 lines, 1.45 seconds, 16971996 bytes code, 410668 bytes data.

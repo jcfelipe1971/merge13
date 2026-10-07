@@ -1,0 +1,5 @@
+{
+    "CodeGPT.apiKey": "Nvidia",
+    "CodeGPT.apiUrl": "https://integrate.api.nvidia.com/nim/code_llama_7b/v1/chat/completions",
+    "CodeGPT.authHeader": "Bearer $NVIDIA_API_KEY"
+}

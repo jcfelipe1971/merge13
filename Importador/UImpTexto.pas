@@ -336,48 +336,46 @@ end;
 function AnyadeUses(const Src, Seccion: string; const Units: TArray<string>): string;
 var
   M: TMatch;
-  UsesStr, U: string;
-  L: TStringList;
-  i: Integer;
+  Ya: TStringList;
+  Faltan: TList<string>;
+  U, X, Zona: string;
+  Corte: Integer;
 begin
   Result := Src;
-  if Seccion = 'interface' then
-    M := TRegEx.Match(Result, '^\s*interface\s*.*?\buses\b(.*?);', [roIgnoreCase, roSingleLine, roMultiLine])
-  else
-    M := TRegEx.Match(Result, '^\s*implementation\s*.*?\buses\b(.*?);', [roIgnoreCase, roSingleLine, roMultiLine]);
-
-  if not M.Success then
-  begin
-    // Si no existe la cláusula uses, la creamos automáticamente
-    if Length(Units) > 0 then
-    begin
-      if Seccion = 'interface' then
-        Result := TRegEx.Replace(Result, '(\binterface\b\s*\r?\n)', '$1' + #13#10 + 'uses ' + String.Join(', ', Units) + ';' + #13#10, [roIgnoreCase])
-      else
-        Result := TRegEx.Replace(Result, '(\bimplementation\b\s*\r?\n)', '$1' + #13#10 + 'uses ' + String.Join(', ', Units) + ';' + #13#10, [roIgnoreCase]);
-    end;
+  if Length(Units) = 0 then
     Exit;
-  end;
-
-  UsesStr := M.Groups[1].Value;
-  L := TStringList.Create;
+  M := TRegEx.Match(Src, '\b' + Seccion + '\b(\s|\{[^}]*\})*(uses\b((?:[^;{]|\{[^}]*\})*);)?', [roIgnoreCase]);
+  if not M.Success then
+    Exit;
+  Ya := TStringList.Create;
+  Faltan := TList<string>.Create;
   try
-    L.CommaText := UsesStr;
+    // units ya presentes en la sección y, para implementation, también en la interfaz
+    Zona := Src;
+    for X in UnitsDeUses(Zona) do
+      Ya.Add(LowerCase(X));
     for U in Units do
-      if U <> '' then
-      begin
-        // evitar duplicados
-        for i := 0 to L.Count - 1 do
-          if SameText(Trim(L[i]), U) then
-            Break;
-        if i = L.Count then
-          L.Add(U);
-      end;
-    Result := TRegEx.Replace(Result, '(\buses\b)(.*?);', '$1 ' + L.CommaText + ';', [roIgnoreCase, roSingleLine]);
+      if Ya.IndexOf(LowerCase(U)) < 0 then
+        Faltan.Add(U);
+    if Faltan.Count = 0 then
+      Exit;
+    if (M.Groups.Count > 2) and M.Groups[2].Success then
+    begin
+      Corte := M.Groups[3].Index + M.Groups[3].Length;
+      Result := Copy(Src, 1, Corte - 1) + ', ' + String.Join(', ', Faltan.ToArray) + Copy(Src, Corte, MaxInt);
+    end
+    else
+    begin
+      Corte := M.Index + M.Length;
+      Result := Copy(Src, 1, Corte - 1) + #13#10#13#10 + 'uses' + #13#10 + '  ' + String.Join(', ', Faltan.ToArray) + ';' +
+        #13#10 + Copy(Src, Corte, MaxInt);
+    end;
   finally
-    L.Free;
+    Ya.Free;
+    Faltan.Free;
   end;
 end;
+
 function QuitaDuplicadosUses(const Src: string): string;
 // Una unit no puede estar en el uses de la interfaz y en el de la implementación
 var

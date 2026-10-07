@@ -18,7 +18,7 @@ uses {IDIOMA_CODE} gnugettext {IDIOMA_CODE} ,
   FireDAC.Stan.StorageBin, System.Net.HttpClient, System.Types, vcl.Controls,
   System.IOUtils, vcl.Forms, Winapi.ShellAPI, Data.Bind.Components,
   Data.Bind.ObjectScope, REST.Response.Adapter, System.Threading, vcl.ComCtrls, vcl.ExtCtrls,
-  frCoreClasses, vcl.OleServer, vcl.StdCtrls, vcl.Grids;
+  frCoreClasses, vcl.OleServer, vcl.StdCtrls, vcl.Grids, System.Net.URLClient;
 
 type
   TCallBack = procedure(JSON: TJSONValue) of object;
@@ -198,7 +198,7 @@ type
       CampoBuscarValor: Variant): String;
     function VerificaExisteEnTercero(Tercero: integer; Tipo: string): boolean;
     procedure QueEs(Tercero: integer; var Cliente, Proveedor, Acreedor, Agente, Empleado, Potencial, Crm: boolean);
-    procedure CrearCodigoQR(Bitmap: TBitmap; s: string; Factor: integer = 1);
+   // procedure CrearCodigoQR(Bitmap: TBitmap; s: string; Factor: integer = 1);
     procedure EnviarReporteEmail(R: TfrxReport; Asunto, Destinatario, Cuerpo, Copia, NombreAdjunto: string);
     function VerificaSmtpUsuario: boolean;
     procedure CambiaTarifaVentas(id_s: integer; Tarifa, Tarifa_old: string);
@@ -253,7 +253,7 @@ type
     Procedure DameActualizaciones(SG: TStringGrid);
     procedure DatosVersion(var VersionBaseDeDatos, Empresa, Copyright, NombreProducto: string; Forzar: boolean = False);
     function DameTelefonoTercero(Tercero: integer): string;
-    function DameCertificado(Serie: string): string;
+    //function DameCertificado(Serie: string): string;
     function DameUrlEndPoint(Tipo: string): string;
     function CreaAdjunto(aTipo: string; aID: integer; Fichero: string; Descripcion: string = '';
       Repositorio: integer = -1): integer;
@@ -297,7 +297,7 @@ implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
 
-uses vcl.Dialogs, UUtiles, ULog, UEntorno, frxRes, frxDesgn, Variants, DelphiZXIngQRCode,
+uses vcl.Dialogs, UUtiles, ULog, UEntorno, frxRes, frxDesgn, Variants, {DelphiZXIngQRCode,}
   UFMain, vcl.Imaging.jpeg, vcl.Imaging.GIFImg, vcl.Imaging.pngimage, System.StrUtils, vcl.ExtDlgs,
   UMensajesDeError;
 
@@ -484,7 +484,7 @@ begin
   end;
 end;
 
-function TDMMain.DameCertificado(Serie: string): string;
+{function TDMMain.DameCertificado(Serie: string): string;
 begin
   Result := CryptUIDlgSelectCertificateFromStoreCert(FMain.Handle, PChar('Delfos') + Chr(0),
     PChar('Seleccione un certificado') + Chr(0));
@@ -496,7 +496,7 @@ begin
     Result := StringReplace(Result, '(', '_', [rfReplaceAll]);
     Result := StringReplace(Result, ')', '_', [rfReplaceAll]);
   end;
-end;
+end; }
 
 procedure TDMMain.Conectar;
 var
@@ -2591,7 +2591,7 @@ begin
   end;
 end;
 
-procedure TDMMain.CrearCodigoQR(Bitmap: TBitmap; s: string; Factor: integer = 1);
+{procedure TDMMain.CrearCodigoQR(Bitmap: TBitmap; s: string; Factor: integer = 1);
 var
   QRCode: TDelphiZXingQRCode;
   Row, Column: integer;
@@ -2631,7 +2631,7 @@ begin
   finally
     QRCode.Free;
   end;
-end;
+end;  }
 
 procedure TDMMain.EnviarReporteEmail(R: TfrxReport; Asunto, Destinatario, Cuerpo, Copia, NombreAdjunto: string);
 var

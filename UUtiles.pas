@@ -5,12 +5,12 @@ interface
 uses  {IDIOMA_CODE} gnugettext {IDIOMA_CODE} ,
   Classes, SysUtils, FireDAC.Comp.Client, FireDAC.Stan.Option, System.UITypes, Vcl.Controls, Winapi.Windows,
   UFMMensajes, Vcl.Forms, FMX.Platform, Data.DB, Vcl.DBGrids, Clipbrd, Vcl.StdCtrls, System.Generics.Collections,
-  Vcl.DBCtrls, UFMFiltrar, uMakerAi.Chat, frxClass, frxExportPDF, IdAttachmentMemory, frxDBSet, UEntorno, UFMDatos,
+  Vcl.DBCtrls, UFMFiltrar, {uMakerAi.Chat,} frxClass, frxExportPDF, IdAttachmentMemory, frxDBSet, UEntorno, UFMDatos,
   System.DateUtils, Vcl.ComCtrls, System.Rtti, Data.Bind.Components, System.Bindings.Expression, Data.Bind.DBScope,
-  WinInet, UFMBuscar, UDateTimePickerHelper, Vcl.ExtCtrls, SpeechLib_TLB, IdHTTP, System.JSON,
+  WinInet, UFMBuscar, UDateTimePickerHelper, Vcl.ExtCtrls, {SpeechLib_TLB,} IdHTTP, System.JSON,
   FireDAC.Comp.DataSet, FireDAC.DatS, Data.FireDACJSONReflect,
   System.Net.HttpClient, System.Net.URLClient, System.Net.HttpClientComponent,UFMProgreso,WinSock,
-  IdGlobal,WbemScripting_TLB,ActiveX,JwaWinCrypt,JwaCryptUIApi,ULog;
+  IdGlobal,{WbemScripting_TLB,}ActiveX,ULog;
 
 function GenCheckDigit(s: string): char;
 function DameDigitosVerhoeff(Numero: string; CantidadDigitos: integer): string;
@@ -68,7 +68,7 @@ procedure RellenaNulos(DS: TDataset; Excluir: array of string);
 procedure Filtrar(AQuery: TDataset; NombreColumna, Filtro: string; CantidadFiltrados: TLabel);
 function MuestraFiltros(DBG: TDBGrid): TModalResult;
 
-function DameChatGPT(Pregunta: string): string;
+//function DameChatGPT(Pregunta: string): string;
 function DamePDFReporte(R: TfrxReport): TMemoryStream;
 
 procedure AsignaDisplayFormat(DataSet: TDataset; FloatDisplayFormat, IntDisplayFormat, DateDisplayFormat: string);
@@ -132,9 +132,9 @@ procedure MuestraBuscar(const DataS: TDataSource; const Tabla, CampoBuscar,Campo
 function MuestraProgreso(const Cabecera: string; Total: Integer): TFMProgreso;
 function DameIPLocal: string;
 function DameIPPublica: string;
-function DameMACLocal: string;
+//function DameMACLocal: string;
 
-function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
+//function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
 function FormatAmount(const d: double; decimales: integer): string;
 function RoundAmount(const d: double; decimales: integer): double;
 
@@ -598,7 +598,7 @@ begin
   end
 end;
 
-function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
+{function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
 var
   MyhCertStore : HCERTSTORE;
   pCertContext : PCCERT_CONTEXT;
@@ -645,7 +645,7 @@ begin
   end
   else
      Result := '';
-end;
+end;  }
 
 function MuestraColumnas(DBG: TDBGrid): TModalResult;
 var
@@ -1529,7 +1529,7 @@ begin
   end;
 end;
 
-
+{
 function DameChatGPT(Pregunta: string): string;
 var
   Chat: TAiChat;
@@ -1544,7 +1544,7 @@ begin
   finally
     Chat.Free;
   end;
-end;
+end;  }
 
 function DamePDFReporte(R: TfrxReport): TMemoryStream;
 var
@@ -2886,7 +2886,7 @@ begin
   end;
 end;
 
-
+{
 function DameMACLocal: string;
 var  // These are all needed for the WMI querying process
   Locator : ISWbemLocator;
@@ -2970,7 +2970,7 @@ begin
   else
      Result := '';
 end;
-
+    }
 
 function FormatAmount(const d: double; decimales: integer): string;
 var

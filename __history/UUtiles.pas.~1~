@@ -1,0 +1,3287 @@
+﻿unit UUtiles;
+
+interface
+
+uses  {IDIOMA_CODE} gnugettext {IDIOMA_CODE} ,
+  Classes, SysUtils, FireDAC.Comp.Client, FireDAC.Stan.Option, System.UITypes, Vcl.Controls, Winapi.Windows,
+  UFMMensajes, Vcl.Forms, FMX.Platform, Data.DB, Vcl.DBGrids, Clipbrd, Vcl.StdCtrls, System.Generics.Collections,
+  Vcl.DBCtrls, UFMFiltrar, uMakerAi.Chat, frxClass, frxExportPDF, IdAttachmentMemory, frxDBSet, UEntorno, UFMDatos,
+  System.DateUtils, Vcl.ComCtrls, System.Rtti, Data.Bind.Components, System.Bindings.Expression, Data.Bind.DBScope,
+  WinInet, UFMBuscar, UDateTimePickerHelper, Vcl.ExtCtrls, SpeechLib_TLB, IdHTTP, System.JSON,
+  FireDAC.Comp.DataSet, FireDAC.DatS, Data.FireDACJSONReflect,
+  System.Net.HttpClient, System.Net.URLClient, System.Net.HttpClientComponent,UFMProgreso,WinSock,
+  IdGlobal,WbemScripting_TLB,ActiveX,JwaWinCrypt,JwaCryptUIApi,ULog;
+
+function GenCheckDigit(s: string): char;
+function DameDigitosVerhoeff(Numero: string; CantidadDigitos: integer): string;
+function RC4(Mensaje, Key: string; Formateado: Boolean = False): string;
+function Base64(Valor: integer): string;
+
+function CodificaClave(clave: string): string;
+function DescodificaClave(clave: string): string;
+
+function DameTransactionRO(BaseDeDatos: TFDConnection; Iniciar: Boolean = False): TFDTransaction;
+function DameTransactionRW(BaseDeDatos: TFDConnection; Iniciar: Boolean = False): TFDTransaction;
+
+function DameQueryRO(AOwner: TComponent; BaseDeDatos: TFDConnection): TFDQuery;
+function DameQueryRW(AOwner: TComponent; BaseDeDatos: TFDConnection): TFDQuery;
+
+function Confirmacion(Mensaje: string): Boolean;
+
+procedure EstiloNormal(Sender: TControl);
+procedure EstiloOk(Sender: TControl);
+procedure EstiloError(Sender: TControl);
+procedure EstiloInactivo(Sender: TControl);
+procedure EstiloEnlace(Sender: TControl);
+procedure EstiloRosado(Sender: TControl);
+procedure EstiloEstado(Sender: TControl; Estado: integer);
+procedure EstiloResaltado(Sender: TControl);
+
+function DameNombrePC: string;
+function DameUsuarioWindows: string;
+function DameVersionWindows: string;
+function MuestraMensaje(Titulo, Mensaje, ACancelar, AAceptar: string; IndiceIcono: integer): TModalResult;
+function MuestraAdjuntos(Indice: integer; Ti, Cabecera: string): TModalResult;
+procedure CierraForms;
+function DameFormByHandle(Handle: THandle): TForm;
+
+procedure CopyDBGridToClipboard(DBGrid: TDBGrid);
+
+function BoolToInt(Value: Boolean): integer;
+function MuestraColumnas(DBG: TDBGrid): TModalResult;
+
+procedure LlenaComboTotales(AQuery: TDataset; Columna: string; Combo: TComboBox);
+procedure OrdenaPorTitulo(AQuery: TDataset; NombreColumna: string);
+
+function SendEmail(const AFrom, ATo, ACC, ASubject, ABody, AHost, AUsername, APassword: string; APort: integer;
+  Attachments: TList<string> = nil): string;
+function SendEmailStream(const AFrom, ATo, ACC, ASubject, ABody, AHost, AUsername, APassword, NombreAdjunto: string;
+  APort: integer; Attachments: TList<TMemoryStream> = nil): string;
+
+function DameTempPath: string;
+function ExceptoNombre(Excepto, Nombre: string): Boolean;
+procedure CambiaTipoLink(AComponent: TComponent);
+function Ajusta(Cadena, Orientacion: string; Longitud: integer; Relleno: char): string;
+function FloatToStrDec(F: double; SeparadorDecimal: char; Mascara: string = ''): string;
+procedure RellenaNulos(DS: TDataset; Excluir: array of string);
+
+procedure Filtrar(AQuery: TDataset; NombreColumna, Filtro: string; CantidadFiltrados: TLabel);
+function MuestraFiltros(DBG: TDBGrid): TModalResult;
+
+function DameChatGPT(Pregunta: string): string;
+function DamePDFReporte(R: TfrxReport): TMemoryStream;
+
+procedure AsignaDisplayFormat(DataSet: TDataset; FloatDisplayFormat, IntDisplayFormat, DateDisplayFormat: string);
+procedure MostrarReporte(Grupo: integer; Titulo: string; LDS: TList<TFDQuery>);
+procedure EditarReporte(Grupo: integer; Titulo: string; LDS: TList<TFDQuery>);
+
+Procedure CreafrxDatasets(LDS: TList<TFDQuery>; Reporte: TfrxReport);
+
+procedure PideDatos(Titulo, Consulta, MiListField, MiKeyField, ValorDefecto, CampoTitulo: string; IndiceIcono: integer;
+  FechaIn: TDateTime; var DatoID, DatoTitulo: string; var FechaOut: TDateTime);
+
+procedure Posicionar(DataSet: TDataset; CampoId: string; Id: integer; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+procedure Refrescar(DataSet: TDataset; CampoId: string; Id: integer; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+procedure Refrescar(DataSet: TDataset; CampoId: string; Id: string; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+procedure Posicionar(DataSet: TDataset; CampoId: string; Id: string; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+
+function DameDireccionDefectoVentas(Empresa, Cliente: integer): integer;
+function CalcCRC32Str(s: string): string;
+procedure CalcCRC32(p: pointer; ByteCount: DWORD; var CRCValue: DWORD);
+
+function EncodeDateTime(const AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond: Word): TDateTime;
+function RecodeDate(const AValue: TDateTime; const AYear, AMonth, ADay: Word): TDateTime;
+
+procedure FechaNula(F: TDateTimePicker; const Value: TValue);
+function TieneConexionInternet: Boolean;
+procedure AsignaCampoFecha(aPicker: TDateTimePicker; ADataSource: TDataSource; const AFieldName: string);
+
+procedure DameMinMax(Tipo: string; var Min, Max: string; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+procedure DameMinMax(Tipo: string; var Min, Max: integer; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+procedure DameMinMax(Tipo: string; var Min, Max: TDateTime; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+procedure DameDesdeHastaPeriodo(Periodo: string; var Desde, Hasta: TDateTime; Empresa: integer = 0;
+  Ejercicio: integer = 0);
+
+function LeeParametro(Param: string; Serie: string = ''): string;
+procedure DameSerieOTaller(L: TLabel);
+function RecodeTime(const AValue: TDateTime; const AHour, AMinute, ASecond, AMilliSecond: Word): TDateTime;
+function HourIntoDate(MyDate: TDateTime; const MyHour: string): TDateTime;
+function QuitarAcentos(const Texto: string): string;
+function Contiene(Frase, Texto: string): Boolean;
+function TextoANumero(const Texto: string): integer;
+function CrearDiccionarioNumeros: TStringList;
+procedure Hablar(Frase: string);
+function ConsultarOllamaDirecto(const Pregunta, SystemPrompt, Modelo: string; const js: Boolean = False): string;
+function DamePromPt(Nombre: string): string;
+procedure CallOllamaWithTools(const UserPrompt: string; var Response: string);
+function Consultarkoboldcpp(Pregunta: string): string;
+procedure ExtraerDatosDelJSON(const RespuestaJSON: string; out Nombre: string; out Numero: integer; out Iva: integer);
+function HayDatosDetalle(id_s: integer): Boolean;
+function TienePromociones(id_detalles_s: integer): Boolean;
+
+procedure MuestraBuscar(const DataS: TDataSource; const Tabla, CampoBuscar,CampoDevolver: string; const CamposaMostrar: TArray<string>;
+  const Valor: Variant; FiltroEntorno, SubConsulta: string);
+
+function MuestraProgreso(const Cabecera: string; Total: Integer): TFMProgreso;
+function DameIPLocal: string;
+function DameIPPublica: string;
+function DameMACLocal: string;
+
+function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
+function FormatAmount(const d: double; decimales: integer): string;
+function RoundAmount(const d: double; decimales: integer): double;
+
+function dame_serie_activa(Serie: string): string;
+function GetFileVersion(const FileName: string): string;
+function ExpandirCadena(cadena: string; long: integer = 0): string;
+
+function LimpiaNIF(Pais, nif: string): string;
+function CompruebaCheckUbicaciones(ID_A: integer; var Peso, Volumen, Diametro: double): integer;
+function CompruebaControlUbicacionAlmacen(Almacen: string): boolean;
+function EsAlfanumerico(const S: string): Boolean;
+
+function DameInstanciaFrame(aForm: TForm): TFrame;
+function DameFormdelTab(Tab: TTabSheet): TForm;
+procedure DameImagenMapa(Lat, Lon: double; Image: TImage;
+  Width: integer = 600; Height: integer = 400; Zoom: integer = 15);
+function IsURL404(const URL: string): boolean;
+procedure Graba(DataSet: TDataSet);
+procedure CambiaTarifaVentas(id_s: integer; Tarifa, Tarifa_old: string);
+function HayCambioIVATarifa(Tarifa_new, Tarifa_old: string): boolean;
+
+
+var
+  LongExpansion : smallint;
+
+implementation
+
+uses
+  System.IOUtils, Vcl.Dialogs, System.Math, Vcl.Graphics, UFMain, UFMAdjuntos,
+  UFMLogin, UFMColumnas, System.Variants, FireDAC.Stan.Intf, Vcl.Themes,
+  // correo
+  IdSMTP, IdMessage, IdText, IdAttachmentFile, UDMMain, System.TypInfo, Vcl.ButtonGroup,Data.Win.ADODB;
+
+const
+  verhoeff_d: array [0 .. 9, 0 .. 9] of integer = ((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (1, 2, 3, 4, 0, 6, 7, 8, 9, 5),
+    (2, 3, 4, 0, 1, 7, 8, 9, 5, 6), (3, 4, 0, 1, 2, 8, 9, 5, 6, 7), (4, 0, 1, 2, 3, 9, 5, 6, 7, 8),
+    (5, 9, 8, 7, 6, 0, 4, 3, 2, 1), (6, 5, 9, 8, 7, 1, 0, 4, 3, 2), (7, 6, 5, 9, 8, 2, 1, 0, 4, 3),
+    (8, 7, 6, 5, 9, 3, 2, 1, 0, 4), (9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+
+  // The permutation table
+  verhoeff_p: array [0 .. 7, 0 .. 9] of integer = ((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (1, 5, 7, 6, 2, 8, 3, 0, 9, 4),
+    (5, 8, 0, 3, 7, 9, 6, 1, 4, 2), (8, 9, 1, 6, 0, 4, 3, 5, 2, 7), (9, 4, 5, 3, 1, 2, 6, 8, 7, 0),
+    (4, 2, 8, 6, 5, 7, 3, 9, 0, 1), (2, 7, 9, 3, 8, 0, 6, 4, 1, 5), (7, 0, 4, 6, 9, 1, 3, 2, 5, 8));
+
+  // The inverse table
+  verhoeff_inv: array [0 .. 9] of char = ('0', '4', '3', '2', '1', '5', '6', '7', '8', '9');
+
+  { Tabla para calcular CRC }
+  table: array [0 .. 255] of DWORD = ($00000000, $77073096, $EE0E612C, $990951BA, $076DC419, $706AF48F, $E963A535,
+    $9E6495A3, $0EDB8832, $79DCB8A4, $E0D5E91E, $97D2D988, $09B64C2B, $7EB17CBD, $E7B82D07, $90BF1D91, $1DB71064,
+    $6AB020F2, $F3B97148, $84BE41DE, $1ADAD47D, $6DDDE4EB, $F4D4B551, $83D385C7, $136C9856, $646BA8C0, $FD62F97A,
+    $8A65C9EC, $14015C4F, $63066CD9, $FA0F3D63, $8D080DF5, $3B6E20C8, $4C69105E, $D56041E4, $A2677172, $3C03E4D1,
+    $4B04D447, $D20D85FD, $A50AB56B, $35B5A8FA, $42B2986C, $DBBBC9D6, $ACBCF940, $32D86CE3, $45DF5C75, $DCD60DCF,
+    $ABD13D59, $26D930AC, $51DE003A, $C8D75180, $BFD06116, $21B4F4B5, $56B3C423, $CFBA9599, $B8BDA50F, $2802B89E,
+    $5F058808, $C60CD9B2, $B10BE924, $2F6F7C87, $58684C11, $C1611DAB, $B6662D3D,
+
+    $76DC4190, $01DB7106, $98D220BC, $EFD5102A, $71B18589, $06B6B51F, $9FBFE4A5, $E8B8D433, $7807C9A2, $0F00F934,
+    $9609A88E, $E10E9818, $7F6A0DBB, $086D3D2D, $91646C97, $E6635C01, $6B6B51F4, $1C6C6162, $856530D8, $F262004E,
+    $6C0695ED, $1B01A57B, $8208F4C1, $F50FC457, $65B0D9C6, $12B7E950, $8BBEB8EA, $FCB9887C, $62DD1DDF, $15DA2D49,
+    $8CD37CF3, $FBD44C65, $4DB26158, $3AB551CE, $A3BC0074, $D4BB30E2, $4ADFA541, $3DD895D7, $A4D1C46D, $D3D6F4FB,
+    $4369E96A, $346ED9FC, $AD678846, $DA60B8D0, $44042D73, $33031DE5, $AA0A4C5F, $DD0D7CC9, $5005713C, $270241AA,
+    $BE0B1010, $C90C2086, $5768B525, $206F85B3, $B966D409, $CE61E49F, $5EDEF90E, $29D9C998, $B0D09822, $C7D7A8B4,
+    $59B33D17, $2EB40D81, $B7BD5C3B, $C0BA6CAD,
+
+    $EDB88320, $9ABFB3B6, $03B6E20C, $74B1D29A, $EAD54739, $9DD277AF, $04DB2615, $73DC1683, $E3630B12, $94643B84,
+    $0D6D6A3E, $7A6A5AA8, $E40ECF0B, $9309FF9D, $0A00AE27, $7D079EB1, $F00F9344, $8708A3D2, $1E01F268, $6906C2FE,
+    $F762575D, $806567CB, $196C3671, $6E6B06E7, $FED41B76, $89D32BE0, $10DA7A5A, $67DD4ACC, $F9B9DF6F, $8EBEEFF9,
+    $17B7BE43, $60B08ED5, $D6D6A3E8, $A1D1937E, $38D8C2C4, $4FDFF252, $D1BB67F1, $A6BC5767, $3FB506DD, $48B2364B,
+    $D80D2BDA, $AF0A1B4C, $36034AF6, $41047A60, $DF60EFC3, $A867DF55, $316E8EEF, $4669BE79, $CB61B38C, $BC66831A,
+    $256FD2A0, $5268E236, $CC0C7795, $BB0B4703, $220216B9, $5505262F, $C5BA3BBE, $B2BD0B28, $2BB45A92, $5CB36A04,
+    $C2D7FFA7, $B5D0CF31, $2CD99E8B, $5BDEAE1D,
+
+    $9B64C2B0, $EC63F226, $756AA39C, $026D930A, $9C0906A9, $EB0E363F, $72076785, $05005713, $95BF4A82, $E2B87A14,
+    $7BB12BAE, $0CB61B38, $92D28E9B, $E5D5BE0D, $7CDCEFB7, $0BDBDF21, $86D3D2D4, $F1D4E242, $68DDB3F8, $1FDA836E,
+    $81BE16CD, $F6B9265B, $6FB077E1, $18B74777, $88085AE6, $FF0F6A70, $66063BCA, $11010B5C, $8F659EFF, $F862AE69,
+    $616BFFD3, $166CCF45, $A00AE278, $D70DD2EE, $4E048354, $3903B3C2, $A7672661, $D06016F7, $4969474D, $3E6E77DB,
+    $AED16A4A, $D9D65ADC, $40DF0B66, $37D83BF0, $A9BCAE53, $DEBB9EC5, $47B2CF7F, $30B5FFE9, $BDBDF21C, $CABAC28A,
+    $53B39330, $24B4A3A6, $BAD03605, $CDD70693, $54DE5729, $23D967BF, $B3667A2E, $C4614AB8, $5D681B02, $2A6F2B94,
+    $B40BBE37, $C30C8EA1, $5A05DF1B, $2D02EF8D);
+
+function GenCheckDigit(s: string): char;
+var
+  i, c, len: integer;
+begin
+  c := 0;
+  s := s + '0';
+  len := Length(s);
+
+  for i := len downto 1 do
+    c := verhoeff_d[c][verhoeff_p[((len - i) mod 8)][Ord(s[i]) - Ord('0')]];
+
+  Result := verhoeff_inv[c];
+end;
+
+function DameDigitosVerhoeff(Numero: string; CantidadDigitos: integer): string;
+var
+  Digito: string;
+  i: integer;
+begin
+  Result := '';
+  for i := 1 to CantidadDigitos do
+  begin
+    Digito := GenCheckDigit(Numero);
+    Result := Result + Digito;
+    Numero := Numero + Digito;
+  end;
+end;
+
+function RC4(Mensaje, Key: string; Formateado: Boolean = False): string;
+var
+  State: array [0 .. 255] of integer;
+  X, Y, Index1, Index2, NMen, i, aux: integer;
+  MensajeCifrado: string;
+begin
+  X := 0;
+  Y := 0;
+  Index1 := 0;
+  Index2 := 0;
+  MensajeCifrado := '';
+  for i := 0 to 255 do
+    State[i] := i;
+
+  for i := 0 to 255 do
+  begin
+    Index2 := (Ord(Key[Index1 + 1]) + State[i] + Index2) mod 256;
+    aux := State[i];
+    State[i] := State[Index2];
+    State[Index2] := aux; // Intercambia Valor
+    Index1 := (Index1 + 1) mod (Length(Key));
+  end;
+  for i := 0 to Length(Mensaje) - 1 do
+  begin
+    X := (X + 1) mod 256;
+    Y := (State[X] + Y) mod 256;
+    aux := State[X];
+    State[X] := State[Y];
+    State[Y] := aux; // Intercambia Valor
+    NMen := Ord(Mensaje[i + 1]) xor State[(State[X] + State[Y]) mod 256];
+    MensajeCifrado := MensajeCifrado + IntToHex(NMen, 2);
+  end;
+
+  if Formateado then
+  begin
+    Result := Copy(MensajeCifrado, 1, 2);
+    for i := 1 to (Length(MensajeCifrado) div 2) - 1 do
+      Result := Result + '-' + Copy(MensajeCifrado, (2 * i) + 1, 2);
+  end
+  else
+    Result := Copy(MensajeCifrado, 1, Length(MensajeCifrado));
+end;
+
+function Base64(Valor: integer): string;
+const
+  Diccionario: array [0 .. 63] of char = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+    'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
+    'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
+    'z', '+', '/');
+var
+  Cociente, Resto: integer;
+begin
+  Result := '';
+  Cociente := 1;
+
+  while (Cociente > 0) do
+  begin
+    Cociente := Valor div 64;
+    Resto := Valor mod 64;
+    Result := Diccionario[Resto] + Result;
+    Valor := Cociente;
+  end;
+end;
+
+function CodificaClave(clave: string): string;
+var
+  s: string;
+  i: integer;
+
+  function Codifica(clave: string): string;
+  var
+    cont, Longitud: integer;
+    clave1, clave2: int64;
+  begin
+    Longitud := Length(clave);
+    clave1 := 0;
+    clave2 := 0;
+    if Longitud > 4 then
+      Longitud := 4;
+    for cont := 1 to Longitud do
+    begin
+      clave1 := clave1 + integer(clave[cont]) * Trunc(IntPower(256, cont - 1));
+    end;
+    Longitud := Length(clave);
+    for cont := 5 to Longitud do
+    begin
+      clave2 := clave2 + integer(clave[cont]) * Trunc(IntPower(256, cont - 5));
+    end;
+    Result := IntToStr(clave1) + ',' + IntToStr(clave2);
+  end;
+
+begin
+  /// Recorro Clave dividiendo de a 8 caracteres y codifico cada parte.
+  /// El resultado es las codificaciones separadas por ;
+  /// Ejemplo: CodificaClave('abcdef123456') = '1684234849,842098277;909456435,0'
+
+  Result := '';
+  i := 1;
+  while (i <= Length(clave)) do
+  begin
+    s := Copy(clave, i, 8);
+    if (s > '') then
+    begin
+      if (i > 1) then
+        Result := Result + ';';
+      Result := Result + Codifica(s);
+    end;
+    Inc(i, 8);
+  end;
+end;
+
+function DescodificaClave(clave: string): string;
+var
+  s: string;
+
+  function Descodifica(clave: string): string;
+  var
+    posicion, cont: integer;
+    clave1, clave2: int64;
+    Resultado: array [0 .. 11] of char;
+  begin
+    Result := '';
+    if (clave <> '') then
+    begin
+      posicion := Pos(',', clave);
+      clave1 := StrToInt64Def(Copy(clave, 1, posicion - 1), 0);
+      clave2 := StrToInt64Def(Copy(clave, posicion + 1, Length(clave)), 0);
+      for cont := 0 to 3 do
+      begin
+        Resultado[cont] := char(clave1 mod 256);
+        clave1 := clave1 div 256;
+      end;
+      for cont := 4 to 11 do
+      begin
+        Resultado[cont] := char(clave2 mod 256);
+        clave2 := clave2 div 256;
+      end;
+      if Resultado <> '' then
+        Result := Resultado;
+    end;
+  end;
+
+begin
+  /// Recorro Clave codificada obteniendo cada parte separada por ;
+  /// Se decodifica cada parte y concatena para obtener la clave original
+  /// Ejemplo: CodificaClave('1684234849,842098277;909456435,0') = 'abcdef123456'
+
+  Result := '';
+  s := clave;
+
+  while (Pos(';', s) > 0) do
+  begin
+    Result := Result + Descodifica(Copy(s, 1, Pos(';', s) - 1));
+    s := Copy(s, Pos(';', s) + 1, Length(s));
+  end;
+
+  if (Pos(';', s) = 0) then
+    Result := Result + Descodifica(s);
+end;
+
+{ //Funcion para enviar Correo, ejemplo de uso
+  var
+  Attachments: TList<string>;
+  ErrorMsg: string;
+  begin
+  Attachments := TList<string>.Create;
+  try
+  Attachments.Add('D:\maxfactu\Utilidades\Estilos\DELFOS_Azul.vsf');
+  Attachments.Add('D:\maxfactu\Utilidades\Estilos\DELFOS_Verde.vsf');
+
+  ErrorMsg := SendEmail('tuemail@example.com', 'destinatario@example.com', 'cc@example.com','Asunto del correo', 'Cuerpo del correo', 'smtp.example.com', 'usuario', 'contraseña', puerto587, Attachments);
+
+  if ErrorMsg <> '' then
+  ShowMessage(ErrorMsg)
+  else
+  ShowMessage('Correo enviado exitosamente .');
+  finally
+  Attachments.Free;
+  end;
+  end }
+
+function SendEmail(const AFrom, ATo, ACC, ASubject, ABody, AHost, AUsername, APassword: string; APort: integer;
+  Attachments: TList<string> = nil): string;
+var
+  SMTP: TIdSMTP;
+  Msg: TIdMessage;
+  Attachment: TIdAttachmentFile;
+  i: integer;
+begin
+  Result := '';
+  SMTP := TIdSMTP.Create(nil);
+  Msg := TIdMessage.Create(nil);
+  try
+    try
+      // Configurar el servidor SMTP
+      SMTP.Host := AHost;
+      SMTP.Port := APort;
+      SMTP.Username := AUsername;
+      SMTP.Password := APassword;
+      SMTP.AuthType := satDefault;
+
+      // Configurar el mensaje de correo
+      Msg.From.Address := AFrom;
+      Msg.Recipients.EMailAddresses := ATo;
+      Msg.Subject := ASubject;
+      Msg.Body.Text := ABody;
+
+      // Agregar destinatarios con copia (CC) si existen
+      if ACC <> '' then
+        Msg.CCList.EMailAddresses := ACC;
+
+      // Agregar los archivos adjuntos si existen
+      if Assigned(Attachments) then
+      begin
+        for i := 0 to Attachments.Count - 1 do
+          Attachment := TIdAttachmentFile.Create(Msg.MessageParts, Attachments[i]);
+      end;
+
+      // Enviar el correo
+      SMTP.Connect;
+      try
+        SMTP.Send(Msg);
+      finally
+        SMTP.Disconnect;
+      end;
+    except
+      on E: Exception do
+        Result := 'Error: ' + E.Message;
+    end;
+  finally
+    Msg.Free;
+    SMTP.Free;
+  end;
+end;
+
+function SendEmailStream(const AFrom, ATo, ACC, ASubject, ABody, AHost, AUsername, APassword, NombreAdjunto: string;
+  APort: integer; Attachments: TList<TMemoryStream> = nil): string;
+var
+  SMTP: TIdSMTP;
+  Msg: TIdMessage;
+  i: integer;
+begin
+  Result := '';
+  SMTP := TIdSMTP.Create(nil);
+  Msg := TIdMessage.Create(nil);
+  try
+    try
+      // Configurar el servidor SMTP
+      SMTP.Host := AHost;
+      SMTP.Port := APort;
+      SMTP.Username := AUsername;
+      SMTP.Password := APassword;
+      SMTP.AuthType := satDefault;
+
+      // Configurar el mensaje de correo
+      Msg.From.Address := AFrom;
+      Msg.Recipients.EMailAddresses := ATo;
+      Msg.Subject := ASubject;
+      Msg.Body.Text := ABody;
+
+      // Agregar destinatarios con copia (CC) si existen
+      if ACC <> '' then
+        Msg.CCList.EMailAddresses := ACC;
+
+      // Agregar los archivos adjuntos si existen
+      if Assigned(Attachments) then
+      begin
+        for i := 0 to Attachments.Count - 1 do
+        begin
+          // Attachments[I].Position := 0; // Reiniciar la posición del stream
+          // Adjuntar el MemoryStream al correo
+          TIdAttachmentMemory.Create(Msg.MessageParts, Attachments[i]);
+          Msg.MessageParts[i].FileName := NombreAdjunto; // Nombre del archivo adjunto
+        end;
+      end;
+
+      // Enviar el correo
+      SMTP.Connect;
+      try
+        SMTP.Send(Msg);
+      finally
+        SMTP.Disconnect;
+      end;
+    except
+      on E: Exception do
+        Result := 'Error: ' + E.Message;
+    end;
+  finally
+    Msg.Free;
+    SMTP.Free;
+  end;
+end;
+
+procedure CopyDBGridToClipboard(DBGrid: TDBGrid);
+var
+  i, j, Fila: integer;
+  Data: string;
+begin
+  Data := '';
+  DBGrid.DataSource.DataSet.DisableControls;
+  Fila := DBGrid.DataSource.DataSet.RecNo;
+  for i := 0 to DBGrid.DataSource.DataSet.RecordCount - 1 do
+  begin
+    DBGrid.DataSource.DataSet.RecNo := i + 1;
+    for j := 0 to DBGrid.FieldCount - 1 do
+    begin
+      Data := Data + DBGrid.Fields[j].AsString;
+      if j < DBGrid.FieldCount - 1 then
+        Data := Data + #9; // Tabulador entre columnas
+    end;
+    Data := Data + #13#10; // Nueva línea entre filas
+  end;
+  Clipboard.AsText := Data; // Copiar al portapapeles
+  DBGrid.DataSource.DataSet.RecNo := Fila;
+  DBGrid.DataSource.DataSet.EnableControls;
+  ShowMessage('Contenido Copiado');
+end;
+
+function DameFormByHandle(Handle: THandle): TForm;
+var
+  i: integer;
+begin
+  Result := nil;
+  for i := 0 to Screen.FormCount - 1 do
+  begin
+    if Screen.Forms[i].Handle = Handle then
+    begin
+      Result := Screen.Forms[i];
+      Break;
+    end;
+  end;
+end;
+
+procedure CierraForms;
+var
+  i: integer;
+  TS: TTabSheet;
+begin
+  // Cerrar todas las Ventanas y TabSheets del Panel principal de FMain
+  for i := Screen.FormCount - 1 downto 0 do
+  begin
+    if (Screen.Forms[i] <> FMain) then
+    begin
+      if not(Screen.Forms[i].Parent is TTabSheet) then
+        Screen.Forms[i].Close
+      else if (Screen.Forms[i].Parent is TTabSheet) then
+      begin
+        TS := TTabSheet(Screen.Forms[i].Parent);
+        if TS.PageControl = FMain.PCMain then
+          TS.Free;
+      end;
+    end;
+  end
+end;
+
+function CryptUIDlgSelectCertificateFromStoreCert(Handle: HWND; cTitle: WideString; cDescr: WideString): string;
+var
+  MyhCertStore : HCERTSTORE;
+  pCertContext : PCCERT_CONTEXT;
+  pszNameString : array[0..255] of char;
+  StoreName : array[0..255] of char;
+begin
+  // --------------------------------------------------------------------
+  // Open a certificate store.
+  StoreName := 'MY';
+  MyhCertStore := CertOpenSystemStore(0, StoreName);
+  if (Assigned(MyhCertStore)) then
+  begin
+     // --------------------------------------------------------------------
+     //  Display a list of the certificates in the store and
+     //  allow the user to select a certificate.
+     pCertContext := CryptUIDlgSelectCertificateFromStore(MyhCertStore, Handle, PWideChar(cTitle), PWideChar(cDescr), CRYPTUI_SELECT_LOCATION_COLUMN, 0, nil);
+     if (not Assigned(pCertContext)) then
+     begin
+        Result := '';
+     end
+     else
+     begin
+        // Ver si hay que comparar con 0
+        pszNameString := '';
+        if (CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nil, pszNameString, 256) > 0) then
+        begin
+           Result := pszNameString;
+        end
+        else
+        begin
+           Result := '';
+        end;
+     end;
+
+     if (Assigned(pCertContext)) then
+     begin
+        CertFreeCertificateContext(pCertContext);
+     end;
+
+     if (Assigned(MyhCertStore)) then
+     begin
+        CertCloseStore(MyhCertStore, 0);
+     end;
+  end
+  else
+     Result := '';
+end;
+
+function MuestraColumnas(DBG: TDBGrid): TModalResult;
+var
+  Columnas: TFMColumnas;
+  F: TForm;
+begin
+  /// Implementacion de MessageDlg() con formato propio
+  Columnas := TFMColumnas.Create(nil);
+  with Columnas do
+  begin
+    F := TForm.Create(nil);
+    F.AlphaBlend := True;
+    F.AlphaBlendValue := 200;
+    F.Color := clBlack;
+    F.WindowState := wsMaximized;
+    F.BorderStyle := bsNone;
+    F.Show;
+    Columnas.Grid := DBG;
+    Result := Columnas.ShowModal;
+    FreeAndNil(F);
+  end;
+end;
+
+function MuestraFiltros(DBG: TDBGrid): TModalResult;
+var
+  Filtros: TFMFiltrar;
+  F: TForm;
+begin
+  /// Implementacion de MessageDlg() con formato propio
+  Filtros := TFMFiltrar.Create(nil);
+  with Filtros do
+  begin
+    F := TForm.Create(nil);
+    F.AlphaBlend := True;
+    F.AlphaBlendValue := 200;
+    F.Color := clBlack;
+    F.WindowState := wsMaximized;
+    F.BorderStyle := bsNone;
+    // F.Show;
+    Filtros.Grid := DBG;
+    Result := Filtros.ShowModal;
+    FreeAndNil(F);
+  end;
+end;
+
+
+function MuestraProgreso(const Cabecera: string; Total: Integer): TFMProgreso;
+begin
+  Result := TFMProgreso.Create(nil);
+  Result.Caption := Cabecera;
+  Result.PB.Max := Total;
+  Result.PB.Position := 0;
+  Result.Show;
+  Result.Update;
+end;
+
+
+function MuestraAdjuntos(Indice: integer; Ti, Cabecera: string): TModalResult;
+var
+  Adjuntos: TFMAdjuntos;
+  F: TForm;
+begin
+  /// Implementacion de MessageDlg() con formato propio
+
+  Adjuntos := TFMAdjuntos.Create(nil);
+  with Adjuntos do
+  begin
+    F := TForm.Create(nil);
+    F.AlphaBlend := True;
+    F.AlphaBlendValue := 200;
+    F.Color := clBlack;
+    F.WindowState := wsMaximized;
+    F.BorderStyle := bsNone;
+    F.Show;
+    Adjuntos.MostrarAdjuntos(Indice, Ti, Cabecera);
+    Result := Adjuntos.ShowModal;
+    FreeAndNil(F);
+  end;
+end;
+
+function MuestraMensaje(Titulo, Mensaje, ACancelar, AAceptar: string; IndiceIcono: integer): TModalResult;
+var
+  dlg: TFMMensajes;
+  F: TForm;
+begin
+  /// Implementacion de MessageDlg() con formato propio
+
+  dlg := TFMMensajes.Create(nil);
+  with dlg do
+  begin
+    LCabecera.Caption := Titulo;
+    LTexto.Caption := Mensaje;
+
+    if (IndiceIcono <> -1) and (ILIconos.Count > IndiceIcono) then
+      ILIconos.GetBitmap(IndiceIcono, Imagen.Picture.Bitmap)
+    else
+      Imagen.Visible := False;
+
+    BCancelar.Visible := ACancelar <> '';
+    BAceptar.Visible := AAceptar <> '';
+
+    F := TForm.Create(nil);
+    F.AlphaBlend := True;
+    F.AlphaBlendValue := 200;
+    F.Color := clBlack;
+    F.WindowState := wsMaximized;
+    F.BorderStyle := bsNone;
+    F.Show;
+    Result := dlg.ShowModal;
+    FreeAndNil(F);
+  end;
+end;
+
+function HayDatosDetalle(id_s: integer): Boolean;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      SQL.Text := 'SELECT FIRST 1 ID_S FROM GES_DETALLES_S WHERE ID_S = :ID_S';
+      ParamByName('ID_S').AsInteger := id_s;
+      ExecSQL;
+      Result := (FieldByName('ID_S').AsInteger <> 0);
+    finally
+      Free;
+    end;
+  end;
+end;
+
+function TienePromociones(id_detalles_s: integer): Boolean;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      SQL.Text := 'SELECT COUNT(*) FROM GES_DETALLES_S WHERE ORIGEN = :ID_DETALLES_S';
+      ParamByName('ID_DETALLES_S').AsInteger := id_detalles_s;
+      ExecSQL;
+      Result := not(FieldByName('COUNT').AsInteger = 0);
+    finally
+      Free;
+    end;
+  end;
+end;
+
+procedure PideDatos(Titulo, Consulta, MiListField, MiKeyField, ValorDefecto, CampoTitulo: string; IndiceIcono: integer;
+  FechaIn: TDateTime; var DatoID, DatoTitulo: string; var FechaOut: TDateTime);
+var
+  Datos: TFMDatos;
+  F: TForm;
+begin
+
+  Datos := TFMDatos.Create(nil);
+  with Datos do
+  begin
+    LCabecera.Caption := Titulo;
+
+    if (IndiceIcono <> -1) and (ILIconos.Count > IndiceIcono) then
+      ILIconos.GetBitmap(IndiceIcono, Imagen.Picture.Bitmap)
+    else
+      Imagen.Visible := False;
+
+    F := TForm.Create(nil);
+    F.AlphaBlend := True;
+    F.AlphaBlendValue := 200;
+    F.Color := clBlack;
+    F.WindowState := wsMaximized;
+    F.BorderStyle := bsNone;
+    F.Show;
+    try
+      Datos.Inicializa(Consulta, MiListField, MiKeyField, ValorDefecto, CampoTitulo, FechaIn);
+      if Datos.ShowModal = mrOk then
+      begin
+        DatoTitulo := Datos.TituloDato;
+        DatoID := Datos.IDDato;
+      end;
+    finally
+      Datos.Free;
+    end;
+    FreeAndNil(F);
+  end;
+end;
+
+function DameNombrePC: string;
+var
+  Buffer: array [0 .. MAX_COMPUTERNAME_LENGTH] of char;
+  Size: Cardinal;
+begin
+  FillChar(Buffer, Sizeof(Buffer), 0);
+  Size := Sizeof(Buffer);
+  if GetComputerName(Buffer, Size) then
+    Result := String(PChar(@Buffer))
+  else
+    Result := '';
+end;
+
+function DameUsuarioWindows: string;
+var
+  tamanoBuffer: Cardinal;
+  bufferUsuario: array [0 .. MAX_PATH] of char;
+begin
+  tamanoBuffer := Sizeof(bufferUsuario);
+  GetUserName(bufferUsuario, tamanoBuffer);
+  Result := bufferUsuario;
+end;
+
+function DameVersionWindows: string;
+var
+  OSVersionInfo: TOSVersionInfo;
+begin
+  OSVersionInfo.dwOSVersionInfoSize := Sizeof(TOSVersionInfo);
+  if GetVersionEx(OSVersionInfo) then
+  begin
+    Result := Format('Windows %d.%d (Build %d)', [OSVersionInfo.dwMajorVersion, OSVersionInfo.dwMinorVersion,
+      OSVersionInfo.dwBuildNumber]);
+  end
+  else
+  begin
+    Result := 'No se pudo determinar la versión de Windows';
+  end;
+end;
+
+function DameTransactionRO(BaseDeDatos: TFDConnection; Iniciar: Boolean = False): TFDTransaction;
+begin
+  Result := TFDTransaction.Create(BaseDeDatos);
+  with Result do
+  begin
+    Connection := BaseDeDatos;
+    Options.AutoCommit := True;
+    Options.DisconnectAction := xdCommit;
+    Options.Isolation := xiReadCommitted;
+    Options.ReadOnly := True;
+    {
+      Options.Params.Clear;
+      Options.Params.Add('read_committed'); // do not localize
+      Options.Params.Add('read'); // do not localize
+    }
+
+    if Iniciar and (not Result.Active) then
+      StartTransaction;
+  end;
+end;
+
+function CompruebaCheckUbicaciones(ID_A: integer; var Peso, Volumen, Diametro: double): integer;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+     try
+        SQL.Text := 'SELECT UBICABLE, PESO, VOLUMEN_UNIT, DIAMETRO_UNIT FROM ART_ARTICULOS WHERE ID_A = :ID_A';
+        ParamByName('ID_A').AsInteger := ID_A;
+        Open;
+        Result := FieldByName('UBICABLE').AsInteger;
+        Peso := FieldByName('PESO').AsFloat;
+        Volumen := FieldByName('VOLUMEN_UNIT').AsFloat;
+        Diametro := FieldByName('DIAMETRO_UNIT').AsFloat;
+     finally
+        Free;
+     end;
+  end;
+end;
+
+function EsAlfanumerico(const S: string): Boolean;
+var
+  i: Integer;
+begin
+  Result := True;
+  for i := 1 to Length(S) do
+  begin
+    if not CharInSet(S[i], ['0'..'9', 'a'..'z', 'A'..'Z']) then
+    begin
+      Result := False;
+      Break;
+    end;
+  end;
+end;
+
+
+function CompruebaControlUbicacionAlmacen(Almacen: string): boolean;
+begin
+  Result := False;
+  if (Trim(Almacen) > '') then
+  begin
+     with DameQueryRO(nil, DMMain.DB) do
+     begin
+        try
+           SQL.Text := 'SELECT CTROL_UBICACION FROM ART_ALMACENES WHERE EMPRESA=' + Entorno.Empresa.ToString + ' AND ALMACEN=''' + Trim(Almacen) + '''';
+           Open;
+           Result := (FieldByName('CTROL_UBICACION').AsInteger = 1);
+        finally
+           Free;
+        end;
+     end;
+  end;
+end;
+
+function DameTransactionRW(BaseDeDatos: TFDConnection; Iniciar: Boolean = False): TFDTransaction;
+begin
+  Result := TFDTransaction.Create(BaseDeDatos);
+  with Result do
+  begin
+    Connection := BaseDeDatos;
+    Options.AutoCommit := True;
+    Options.DisconnectAction := xdRollback;
+    Options.Isolation := xiSnapshot;
+    Options.ReadOnly := False;
+    {
+      Options.Params.Clear;
+      Options.Params.Add('read_committed'); // do not localize
+      Options.Params.Add('rec_version'); // do not localize
+      Options.Params.Add('nowait'); // do not localize
+    }
+
+    if Iniciar and (not Result.Active) then
+      StartTransaction;
+  end;
+end;
+
+function DameQueryRO(AOwner: TComponent; BaseDeDatos: TFDConnection): TFDQuery;
+begin
+  Result := TFDQuery.Create(AOwner);
+  with Result do
+  begin
+    Connection := BaseDeDatos;
+    Transaction := DameTransactionRO(BaseDeDatos, True);
+  end;
+end;
+
+function DameQueryRW(AOwner: TComponent; BaseDeDatos: TFDConnection): TFDQuery;
+begin
+  Result := TFDQuery.Create(AOwner);
+  with Result do
+  begin
+    Connection := BaseDeDatos;
+    Transaction := DameTransactionRW(BaseDeDatos, True);
+  end;
+end;
+
+function Confirmacion(Mensaje: string): Boolean;
+begin
+  Result := (MessageDlg(Mensaje, mtConfirmation, [mbYes, mbNo], 0, mbYes) = mrYes);
+end;
+
+procedure EstiloNormal(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seFont, seClient, seBorder];
+
+    if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := True;
+      TLabel(Sender).ParentFont := True;
+    end;
+  end;
+end;
+
+procedure EstiloResaltado(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seClient, seBorder];
+
+    if Sender is TButton then
+    begin
+      TButton(Sender).Font.Color := clRed;
+    end;
+  end;
+end;
+
+procedure EstiloEstado(Sender: TControl; Estado: integer);
+begin
+  with Sender do
+  begin
+    StyleElements := [seClient, seBorder];
+
+    if Sender is TLabel then
+    begin
+      case Estado of
+        1:
+          TLabel(Sender).Font.Color := clGreen;
+        3:
+          TLabel(Sender).Font.Color := clRed;
+      else
+        StyleElements := [seClient, seBorder, seFont];
+      end;
+
+    end;
+  end;
+end;
+
+procedure EstiloOk(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seBorder];
+
+    if Sender is TDBEdit then
+    begin
+      TDBEdit(Sender).Color := clLime;
+      TDBEdit(Sender).Font.Color := clBlack;
+    end
+    else if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := False;
+      TLabel(Sender).Color := clLime;
+      TLabel(Sender).Font.Color := clBlack;
+    end;
+  end;
+end;
+
+procedure EstiloError(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seBorder];
+
+    if Sender is TDBEdit then
+    begin
+      TDBEdit(Sender).Color := clRed;
+      TDBEdit(Sender).Font.Color := clWhite;
+    end
+    else if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := False;
+      TLabel(Sender).Color := clRed;
+      TLabel(Sender).Font.Color := clWhite;
+    end;
+  end;
+end;
+
+procedure EstiloInactivo(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seBorder];
+
+    if Sender is TDBEdit then
+    begin
+      TDBEdit(Sender).Color := clInfoBk;
+      TDBEdit(Sender).Font.Color := clBlack;
+      TDBEdit(Sender).Enabled := False
+    end
+    else if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := False;
+      TLabel(Sender).Color := clInfoBk;
+      TLabel(Sender).Font.Color := clBlack;
+    end
+    else if Sender is TDBLabeledEdit then
+    begin
+      TDBLabeledEdit(Sender).Color := clInfoBk;
+      TDBLabeledEdit(Sender).Font.Color := clBlack;
+    end;
+
+  end;
+end;
+
+procedure EstiloRosado(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seBorder];
+
+    if Sender is TDBEdit then
+    begin
+      TDBEdit(Sender).Color := $00CAADF9;
+      TDBEdit(Sender).Font.Color := clBlack;
+    end
+    else if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := False;
+      TLabel(Sender).Color := $00CAADF9;
+      TLabel(Sender).Font.Color := clBlack;
+    end
+  end;
+end;
+
+function EncodeDateTime(const AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond: Word): TDateTime;
+begin
+  if not TryEncodeDateTime(AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond, Result) then
+    InvalidDateTimeError(AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond);
+end;
+
+procedure EstiloEnlace(Sender: TControl);
+begin
+  with Sender do
+  begin
+    StyleElements := [seBorder];
+
+    if Sender is TDBEdit then
+    begin
+      TDBEdit(Sender).Color := clAqua;
+      TDBEdit(Sender).Font.Color := clBlack;
+
+      TDBEdit(Sender).OnMouseEnter := FMain.TWinControlMouseEnter;
+      TDBEdit(Sender).OnMouseLeave := FMain.TWinControlMouseLeave;
+      TDBEdit(Sender).OnMouseUp := FMain.TWinControlMouseUp;
+    end
+    else if Sender is TLabel then
+    begin
+      TLabel(Sender).Transparent := False;
+      TLabel(Sender).Color := clAqua;
+      TLabel(Sender).Font.Color := clBlack;
+
+      TLabel(Sender).OnMouseEnter := FMain.TWinControlMouseEnter;
+      TLabel(Sender).OnMouseLeave := FMain.TWinControlMouseLeave;
+    end
+    else if Sender is TEdit then
+    begin
+      TEdit(Sender).Color := clAqua;
+      TEdit(Sender).Font.Color := clBlack;
+
+      TEdit(Sender).OnMouseEnter := FMain.TWinControlMouseEnter;
+      TEdit(Sender).OnMouseLeave := FMain.TWinControlMouseLeave;
+      TEdit(Sender).OnMouseUp := FMain.TWinControlMouseUp;
+      TEdit(Sender).ReadOnly := True;
+    end
+    else if Sender is TDBLabeledEdit then
+    begin
+      TEdit(Sender).Color := clAqua;
+      TEdit(Sender).Font.Color := clBlack;
+
+      TEdit(Sender).OnMouseEnter := FMain.TWinControlMouseEnter;
+      TEdit(Sender).OnMouseLeave := FMain.TWinControlMouseLeave;
+      TEdit(Sender).OnMouseUp := FMain.TWinControlMouseUp;
+      TEdit(Sender).ReadOnly := True;
+    end
+  end;
+end;
+
+function BoolToInt(Value: Boolean): integer;
+begin
+  if Value then
+    Result := 1
+  else
+    Result := 0;
+end;
+
+procedure MuestraBuscar(const DataS: TDataSource; const Tabla, CampoBuscar,CampoDevolver: string; const CamposaMostrar: TArray<string>;
+  const Valor: Variant; FiltroEntorno, SubConsulta: string);
+var
+  FMBuscar: TFMBuscar;
+begin
+  try
+    FMBuscar := TFMBuscar.Create(nil);
+    FMBuscar.ConfigurarBusqueda(DataS, Tabla, CampoBuscar,CampoDevolver, CamposaMostrar, Valor, FiltroEntorno, SubConsulta);
+    FMBuscar.ShowModal;
+  finally
+    FMBuscar.Free;
+  end;
+end;
+
+procedure LlenaComboTotales(AQuery: TDataset; Columna: string; Combo: TComboBox);
+var
+  q: TFDQuery;
+  Numerico: Boolean;
+  Bookmark: TBookmark;
+  Contador, SumVal, MaxVal, MinVal: Double;
+  HasValue: Boolean;
+  Primero: Boolean;
+begin
+  q := AQuery as TFDQuery;
+  with q do
+  begin
+    Combo.Items.Clear;
+
+    // === CASO CON FILTRO ACTIVO: cálculo manual ===
+    if Filtered and (Filter <> '') then
+    begin
+      Numerico := False;
+      Contador := 0;
+      SumVal := 0;
+      MaxVal := 0;
+      MinVal := 0;
+      Primero := True;
+      HasValue := False;
+
+      // Verificar si es numérico
+      if (FieldByName(Columna).ClassType = TIntegerField) or
+         (FieldByName(Columna).ClassType = TFloatField) or
+         (FieldByName(Columna).ClassType = TLargeintField) or
+         (FieldByName(Columna).ClassType = TCurrencyField) then
+        Numerico := True;
+
+      Bookmark := GetBookmark;
+      DisableControls;
+      try
+        First;
+        while not EOF do
+        begin
+          if not FieldByName(Columna).IsNull then
+          begin
+            Contador := Contador+1;
+            HasValue := True;
+
+            if Numerico then
+            begin
+              SumVal := SumVal + FieldByName(Columna).AsFloat;
+              if Primero then
+              begin
+                MaxVal := FieldByName(Columna).AsFloat;
+                MinVal := FieldByName(Columna).AsFloat;
+                Primero := False;
+              end
+              else
+              begin
+                if FieldByName(Columna).AsFloat > MaxVal then
+                  MaxVal := FieldByName(Columna).AsFloat;
+                if FieldByName(Columna).AsFloat < MinVal then
+                  MinVal := FieldByName(Columna).AsFloat;
+              end;
+            end;
+          end;
+          Next;
+        end;
+      finally
+        GotoBookmark(Bookmark);
+        FreeBookmark(Bookmark);
+        EnableControls;
+      end;
+
+      // Agregar resultados al combo
+      Combo.Items.Add('Cantidad = ' + Contador.ToString);
+
+      if Numerico and HasValue then
+      begin
+        Combo.Items.Add('Suma = ' + FormatFloat('0.##', SumVal));
+        Combo.Items.Add('Máximo = ' + FormatFloat('0.##', MaxVal));
+        Combo.Items.Add('Mínimo = ' + FormatFloat('0.##', MinVal));
+        Combo.Items.Add('Promedio = ' + FormatFloat('0.##', IfThen(Contador > 0, SumVal / Contador, 0)));
+      end;
+    end
+    // === CASO SIN FILTRO: usar Aggregates (más rápido) ===
+    else
+    begin
+      AggregatesActive := True;
+      Aggregates.Clear;
+      Numerico := False;
+
+      with Aggregates.Add do
+      begin
+        Name := 'Cantidad_' + Columna;
+        Expression := 'count(' + Columna + ')';
+        GroupingLevel := 0;
+        Active := True;
+        if not VarIsNull(Aggregates[0].Value) then
+          Combo.Items.Add('Cantidad = ' + VarToStr(Aggregates[0].Value));
+      end;
+
+      if (FieldByName(Columna).ClassType = TIntegerField) or
+         (FieldByName(Columna).ClassType = TFloatField) or
+         (FieldByName(Columna).ClassType = TLargeintField) or
+         (FieldByName(Columna).ClassType = TCurrencyField) then
+        Numerico := True;
+
+      if Numerico then
+      begin
+        with Aggregates.Add do
+        begin
+          Name := 'Suma_' + Columna;
+          Expression := 'sum(' + Columna + ')';
+          GroupingLevel := 0;
+          Active := True;
+          if not VarIsNull(Aggregates[1].Value) then
+            Combo.Items.Add('Suma = ' + VarToStr(Aggregates[1].Value));
+        end;
+        with Aggregates.Add do
+        begin
+          Name := 'Max_' + Columna;
+          Expression := 'Max(' + Columna + ')';
+          GroupingLevel := 0;
+          Active := True;
+          if not VarIsNull(Aggregates[2].Value) then
+            Combo.Items.Add('Máximo = ' + VarToStr(Aggregates[2].Value));
+        end;
+        with Aggregates.Add do
+        begin
+          Name := 'Min_' + Columna;
+          Expression := 'Min(' + Columna + ')';
+          GroupingLevel := 0;
+          Active := True;
+          if not VarIsNull(Aggregates[3].Value) then
+            Combo.Items.Add('Mínimo = ' + VarToStr(Aggregates[3].Value));
+        end;
+        with Aggregates.Add do
+        begin
+          Name := 'Promedio_' + Columna;
+          Expression := 'Avg(' + Columna + ')';
+          GroupingLevel := 0;
+          Active := True;
+          if not VarIsNull(Aggregates[4].Value) and VarIsNumeric(Aggregates[4].Value) then
+            Combo.Items.Add('Promedio = ' + FormatFloat('0.00', Aggregates[4].Value));
+        end;
+      end;
+    end;
+  end;
+  Combo.ItemIndex := 0;
+end;
+
+procedure Filtrar(AQuery: TDataset; NombreColumna, Filtro: string; CantidadFiltrados: TLabel);
+begin
+  with (AQuery as TFDQuery) do
+  begin
+    if Filtro = '' then
+      Filtered := False
+    else
+    begin
+      Filtered := False;
+      FIlter := ' Upper(' + NombreColumna + ' ) like ' + QuotedStr('%' + UpperCase(Filtro) + '%');
+      Filtered := True;
+      if Assigned(CantidadFiltrados) and (RecordCount > 0) then
+        CantidadFiltrados.Caption := RecordCount.ToString;
+
+    end;
+  end;
+end;
+
+procedure OrdenaPorTitulo(AQuery: TDataset; NombreColumna: string);
+var
+  s: String;
+  ind: TFDIndex;
+  q: TFDQuery;
+  FiltroGuardado: string;
+  FiltradoActivo: Boolean;
+begin
+  q := AQuery as TFDQuery;
+  s := 'By_' + NombreColumna;
+
+  // === GUARDAR ESTADO DEL FILTRO ===
+  FiltroGuardado := q.Filter;
+  FiltradoActivo := q.Filtered;
+
+  with q.Indexes do
+  begin
+    ind := FindIndex(s);
+    if ind = nil then
+    begin
+      ind := Add;
+      ind.Name := s;
+      ind.Fields := NombreColumna;
+      ind.Active := True;
+    end
+    else
+    begin
+      // Invertir el orden del indexado
+      if soDescending in ind.Options then
+        ind.Options := ind.Options - [soDescending]
+      else
+        ind.Options := ind.Options + [soDescending];
+    end;
+    q.IndexName := s;
+  end;
+
+  // === RESTAURAR FILTRO ===
+  if FiltradoActivo and (FiltroGuardado <> '') then
+  begin
+    q.Filter := FiltroGuardado;
+    q.Filtered := True;
+  end;
+end;
+
+function DameTempPath: string;
+var
+  pcadena: PChar;
+begin
+  GetMem(pcadena, MAX_PATH + 1);
+  try
+    GetTempPath(MAX_PATH, pcadena);
+    Result := StrPas(pcadena);
+  finally
+    FreeMem(pcadena);
+  end;
+end;
+
+// Cambia color de todos los labes, exceptuando los nombres que vengan en Excepto
+procedure CambiaTipoLink(AComponent: TComponent);
+var
+  Context: TRttiContext;
+  InstanceType: TRttiInstanceType;
+  Prop: TRttiProperty;
+  Font: TFont;
+begin
+  Context := TRttiContext.Create;
+  try
+    // Desactivar el estilo de fuente del componente
+    if AComponent is TWinControl then
+      TWinControl(AComponent).StyleElements := TWinControl(AComponent).StyleElements - [seFont];
+    // Usar RTTI para cambiar la fuente
+    InstanceType := Context.GetType(AComponent.ClassType) as TRttiInstanceType;
+    Prop := InstanceType.GetProperty('Font');
+    if Prop <> nil then
+    begin
+      Font := Prop.GetValue(AComponent).AsObject as TFont;
+      if Font <> nil then
+      begin
+        Font.Color := StyleServices.GetSystemColor(clHighlight);
+        Font.Style := Font.Style + [fsItalic];
+      end;
+    end;
+  finally
+    Context.Free;
+  end;
+end;
+
+// Función para resorer una cadena separada por ';' y encontrar nombres
+function ExceptoNombre(Excepto, Nombre: string): Boolean;
+begin
+  Result := False;
+  var // numbre;nombre;nombre
+  reg := Excepto.Split([';']);
+  // se divide todo antes del ' ; '  para cada campo
+  for var i := 0 to High(reg) do
+    if reg[i] = Nombre then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+function Ajusta(Cadena, Orientacion: string; Longitud: integer; Relleno: char): string;
+begin
+  // Limpio Cadena
+  Cadena := Trim(Cadena);
+
+  // Corto cadena si es mayor a la Longitud aceptada
+  if Length(Cadena) > Longitud then
+    Cadena := Copy(Cadena, 1, Longitud);
+
+  // Relleno espacio restante en la Cadena
+  if UpperCase(Orientacion) = 'I' then
+    // Caracteres de rellena a Izquierda
+    Result := StringOfChar(Relleno, Longitud - Length(Cadena)) + Cadena
+  else
+    // Caracteres de rellena a Derecha
+    Result := Cadena + StringOfChar(Relleno, Longitud - Length(Cadena));
+end;
+
+function FloatToStrDec(F: double; SeparadorDecimal: char; Mascara: string = ''): string;
+begin
+  if (Mascara = '') then
+    Result := FloatToStr(F)
+  else
+    Result := FormatFloat(Mascara, F);
+
+  // if (SYStem.SysUtils.dec DecimalSeparator <> SeparadorDecimal) then
+  // Result := StringReplace(Result, DecimalSeparator, SeparadorDecimal, []);
+end;
+
+procedure RellenaNulos(DS: TDataset; Excluir: array of string);
+var
+  i: Integer;
+  ExcluirList: TStringList;
+begin
+  ExcluirList := TStringList.Create;
+  try
+    // Pasamos el array a un TStringList para búsquedas rápidas
+    for i := Low(Excluir) to High(Excluir) do
+      ExcluirList.Add(Excluir[i]);
+
+    for i := 0 to DS.Fields.Count - 1 do
+    begin
+      // Si el campo está en la lista de exclusión, saltamos
+      if ExcluirList.IndexOf(DS.Fields[i].FieldName) <> -1 then
+        Continue;
+
+      if (DS.Fields[i].IsNull) and (DS.Fields[i].FieldKind <> fkCalculated) then
+      begin
+        DS.Edit;
+        if (DS.Fields[i] is TStringField) then
+          TStringField(DS.Fields[i]).AsString := '';
+        if (DS.Fields[i] is TFloatField) then
+          TFloatField(DS.Fields[i]).AsFloat := 0;
+        if (DS.Fields[i] is TIntegerField) then
+          TIntegerField(DS.Fields[i]).AsInteger := 0;
+        if (DS.Fields[i] is TSmallintField) then
+          TSmallintField(DS.Fields[i]).AsInteger := 0;
+        if (DS.Fields[i] is TSQLTimeStampField) then
+          TDateTimeField(DS.Fields[i]).AsDateTime := Now;
+      end;
+    end;
+  finally
+    ExcluirList.Free;
+  end;
+end;
+
+
+function DameChatGPT(Pregunta: string): string;
+var
+  Chat: TAiChat;
+begin
+  Chat := TAiChat.Create(nil);
+  try
+    Chat.ApiKey :=
+      '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';
+    Chat.Model := 'gpt-4o-mini';
+    Chat.AddMessage(Pregunta, 'user');
+    Result := Chat.Run;
+  finally
+    Chat.Free;
+  end;
+end;
+
+function DamePDFReporte(R: TfrxReport): TMemoryStream;
+var
+  PDFExport: TfrxPDFExport;
+  MemoryStream: TMemoryStream;
+begin
+  Result := nil;
+  try
+    // Crear instancia del exportador PDF
+    PDFExport := TfrxPDFExport.Create(nil);
+    try
+      // Crear un MemoryStream para almacenar el PDF en memoria
+      MemoryStream := TMemoryStream.Create;
+      try
+        // Configurar el exportador PDF
+        PDFExport.ShowDialog := False; // No mostrar el diálogo de guardado
+        PDFExport.ShowProgress := False; // No mostrar el progreso de exportación
+        PDFExport.Stream := MemoryStream; // Asignar el MemoryStream al exportador
+
+        R.PrepareReport;
+        R.Export(PDFExport);
+
+        MemoryStream.Position := 0; // Reiniciar la posición del stream para leerlo
+        Result := MemoryStream;
+        // MemoryStream.SaveToFile('d:\ppp.pdf'); // Ejemplo: Guardar en disco
+      finally
+        // MemoryStream.Free;
+      end;
+    finally
+      PDFExport.Free;
+    end;
+  finally
+    // R.Free;
+  end;
+end;
+
+procedure AsignaDisplayFormat(DataSet: TDataset; FloatDisplayFormat, IntDisplayFormat, DateDisplayFormat: string);
+var
+  i: integer;
+begin
+  for i := 0 to DataSet.FieldCount - 1 do
+  begin
+    if (DataSet.Fields[i] is TFloatField) then
+      TFloatField(DataSet.Fields[i]).DisplayFormat := FloatDisplayFormat;
+    {
+      Evito dar formato de números enteros para evitar errores de edición con el punto separador de miles.
+
+      if (DataSet.Fields[i] is TIntegerField) then
+      TFloatField(DataSet.Fields[i]).DisplayFormat := IntDisplayFormat;
+    }
+    if (DataSet.Fields[i] is TDateTimeField) then
+      TFloatField(DataSet.Fields[i]).DisplayFormat := DateDisplayFormat;
+  end;
+end;
+
+procedure MostrarReporte(Grupo: integer; Titulo: string; LDS: TList<TFDQuery>);
+begin
+  If not DMMain.ExisteReporte(Grupo, Titulo) then
+  begin
+    if MuestraMensaje('Listados', 'No existe Reporte "' + sLineBreak + Titulo + sLineBreak + '" ' + sLineBreak +
+      'Quiere cargar el reporte a la base de datos? ', 'NO', 'SI', 0) = 1 then
+    begin
+      var
+      D := TOpenDialog.Create(nil);
+      if D.Execute then
+      begin
+        try
+          DMMain.CargarReporteDesdeFichero(Grupo, D.FileName);
+        finally
+          ShowMessage('El Listado ' + sLineBreak + Titulo + sLineBreak + ' ha sido cargado a la base de datos');
+        end;
+      end;
+      D.Free;
+    end;
+  end
+  else
+    DMMain.MuestraReporte(Grupo, Titulo, LDS);
+end;
+
+procedure EditarReporte(Grupo: integer; Titulo: string; LDS: TList<TFDQuery>);
+var
+  Reporte: TfrxReport;
+begin
+
+  if DMMain.ExisteReporte(Grupo, Titulo) then
+  begin
+    Screen.Cursor := crHourGlass;
+    try
+      Reporte := DMMain.CargaReporteFB(Grupo, Titulo);
+      If Assigned(Reporte) then
+      begin
+        CreafrxDatasets(LDS, Reporte);
+        Reporte.PrepareReport(True);
+        Reporte.DesignReport;
+      end;
+    finally
+      DMMain.GuardaReporteFB(Grupo, Titulo, Reporte);
+      Reporte.Free;
+      Screen.Cursor := crDefault;
+    end;
+  end;
+end;
+
+Procedure CreafrxDatasets(LDS: TList<TFDQuery>; Reporte: TfrxReport);
+var
+  frxDS: TfrxDBDataset;
+  i: integer;
+begin
+  Reporte.DataSets.Clear;
+  if LDS.Count > 0 then
+    for i := 0 to LDS.Count - 1 do
+    begin
+      try
+        frxDS := TfrxDBDataset.Create(nil);
+        frxDS.DataSet := LDS[i];
+        frxDS.Name := 'frxDB' + LDS[i].Name;
+        frxDS.Username := frxDS.Name;
+        Reporte.DataSets.Add(frxDS);
+      finally
+      end;
+    end;
+end;
+
+
+
+function DameInstanciaFrame(aForm: TForm): TFrame;
+begin
+  Result := nil;
+  for var i := 0 to aForm.ControlCount - 1 do
+    if aForm.Controls[i] is TFrame then
+      Result := aForm.Controls[i] as TFrame;
+end;
+
+function DameFormdelTab(Tab: TTabSheet): TForm;
+begin
+  Result := nil;
+  for var i := 0 to Tab.ControlCount - 1 do
+    if Tab.Controls[i] is TForm then
+      Result := Tab.Controls[i] as TForm;
+end;
+
+procedure Refrescar(DataSet: TDataset; CampoId: string; Id: integer; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+begin
+  with DataSet do
+  begin
+    DisableControls;
+    try
+      // Cierro la tabla si esta abierta
+      if Active then
+        Close;
+
+      if (CampoId = '') then
+        Open
+      else
+        Posicionar(DataSet, CampoId, Id, Aproximada, DesdeElFinal);
+    finally
+      EnableControls;
+    end;
+  end;
+end;
+
+procedure Refrescar(DataSet: TDataset; CampoId: string; Id: string; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+begin
+  with DataSet do
+  begin
+    DisableControls;
+    try
+      // Cierro la tabla si esta abierta
+      if Active then
+        Close;
+
+      if (CampoId = '') then
+        Open
+      else
+        Posicionar(DataSet, CampoId, Id, Aproximada, DesdeElFinal);
+    finally
+      EnableControls;
+    end;
+  end;
+end;
+
+procedure Posicionar(DataSet: TDataset; CampoId: string; Id: string; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+begin
+  with DataSet do
+  begin
+    DisableControls;
+    try
+      // Abro la tabla si esta cerrada
+      if not Active then
+        Open;
+
+      if DesdeElFinal then
+      begin
+        Last;
+
+        if Aproximada then
+        begin
+          // Encuentro el primero cuyo ID sea menor al parametro
+          while ((not BOF) and (FieldByName(CampoId).AsString > Id)) do
+            Prior;
+        end
+        else
+        begin
+          // Encuentro el primero cuyo ID sea igual al parametro
+          while ((not BOF) and (FieldByName(CampoId).AsString <> Id)) do
+            Prior;
+        end;
+      end
+      else
+      begin
+        First;
+
+        if Aproximada then
+        begin
+          // Encuentro el primero cuyo ID sea mayor al parametro
+          while ((not EOF) and (FieldByName(CampoId).AsString < Id)) do
+            Next;
+        end
+        else
+        begin
+          // Encuentro el primero cuyo ID sea igual al parametro
+          while ((not EOF) and (FieldByName(CampoId).AsString <> Id)) do
+            Next;
+        end;
+      end;
+    finally
+      EnableControls;
+    end;
+  end;
+end;
+
+procedure Posicionar(DataSet: TDataset; CampoId: string; Id: integer; Aproximada: Boolean = False;
+  DesdeElFinal: Boolean = False); overload;
+var
+  F: TIntegerField;
+begin
+  with DataSet do
+  begin
+    DisableControls;
+    try
+      // Abro la tabla si esta cerrada
+      if not Active then
+        Open;
+
+      F := TIntegerField(FieldByName(CampoId));
+      if Aproximada then
+      begin
+        if DesdeElFinal then
+        begin
+          // Encuentro el primero cuyo ID sea menor al parametro
+          Last;
+          while ((not BOF) and (F.AsInteger > Id)) do
+            Prior;
+        end
+        else
+        begin
+          // Encuentro el primero cuyo ID sea mayor al parametro
+          First;
+          while ((not EOF) and (F.AsInteger < Id)) do
+            Next;
+        end;
+      end
+      else
+      begin
+        if DesdeElFinal then
+        begin
+          Last;
+          // Encuentro el primero cuyo ID sea igual al parametro
+          while ((not BOF) and (F.AsInteger <> Id)) do
+            Prior;
+        end
+        else
+        begin
+          // Encuentro el primero cuyo ID sea igual al parametro
+          First;
+          while ((not EOF) and (F.AsInteger <> Id)) do
+            Next;
+        end;
+      end;
+    finally
+      EnableControls;
+    end;
+  end;
+end;
+
+function DameDireccionDefectoVentas(Empresa, Cliente: integer): integer;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      SQL.Add(' SELECT C.DIR_DEFECTO_VENTAS, C.DIRECCION_DEFECTO, D.DIRECCION ');
+      SQL.Add(' FROM EMP_CLIENTES C ');
+      SQL.Add(' JOIN SYS_TERCEROS_DIRECCIONES D ON C.TERCERO = D.TERCERO ');
+      SQL.Add(' WHERE ');
+      SQL.Add(' C.EMPRESA = :EMPRESA AND ');
+      SQL.Add(' C.CLIENTE = :CLIENTE AND ');
+      SQL.Add(' D.DIR_DEFECTO = 1 ');
+      ParamByName('EMPRESA').AsInteger := Empresa;
+      ParamByName('CLIENTE').AsInteger := Cliente;
+      Open;
+      if (FieldByName('DIR_DEFECTO_VENTAS').AsInteger = 1) then
+        Result := FieldByName('DIRECCION_DEFECTO').AsInteger
+      else
+        Result := FieldByName('DIRECCION').AsInteger;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+function CalcCRC32Str(s: string): string;
+var
+  CRC32: DWORD;
+begin
+  CRC32 := $FFFFFFFF;
+  if (Length(s) > 0) then
+    CalcCRC32(Addr(s[1]), Length(s), CRC32)
+  else
+    CRC32 := 0;
+  Result := IntToHex(CRC32, 8);
+end;
+
+procedure CalcCRC32(p: pointer; ByteCount: DWORD; var CRCValue: DWORD);
+var
+  i: DWORD;
+  q: ^byte;
+begin
+  q := p;
+  for i := 0 to ByteCount - 1 do
+  begin
+    CRCValue := (CRCValue shr 8) xor table[q^ xor (CRCValue and $000000FF)];
+    Inc(q);
+  end;
+end { CalcCRC32 };
+
+function RecodeDate(const AValue: TDateTime; const AYear, AMonth, ADay: Word): TDateTime;
+begin
+  Result := RecodeDateTime(AValue, AYear, AMonth, ADay, RecodeLeaveFieldAsIs, RecodeLeaveFieldAsIs,
+    RecodeLeaveFieldAsIs, RecodeLeaveFieldAsIs);
+end;
+
+procedure FechaNula(F: TDateTimePicker; const Value: TValue);
+begin
+  if Value.IsEmpty then
+  begin
+    F.Format := ' / / ';
+    F.Date := Now;
+  end
+  else
+  begin
+    F.Format := 'dd/MM/yyyy';
+  end;
+end;
+
+function TieneConexionInternet: Boolean;
+var
+  Flags: DWORD;
+begin
+  Result := InternetGetConnectedState(@Flags, 0);
+end;
+
+procedure AsignaCampoFecha(aPicker: TDateTimePicker; ADataSource: TDataSource; const AFieldName: string);
+begin
+  aPicker.BindToData(ADataSource, AFieldName);
+  aPicker.OnCloseUp := FMain.DTPCloseUp;
+  aPicker.OnKeyDown := FMain.DateTimePickerKeyDown;
+  aPicker.OnEnter := FMain.DateTimePickerEnter;
+
+  if Assigned(aPicker.DataSource.DataSet) then
+    if aPicker.DataSource.DataSet.FieldByName(AFieldName).AsDateTime <> 0 then
+    begin
+      aPicker.Format := 'dd/MM/yyyy ';
+      aPicker.Date := aPicker.DataSource.DataSet.FieldByName(AFieldName).AsDateTime;
+    end
+    else
+    begin
+      aPicker.DateTime := 0; // Fecha cero (30/12/1899)
+      aPicker.Format := ' '; // Formato en blanco
+    end;
+end;
+
+procedure DameMinMax(Tipo: string; var Min, Max: string; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+var
+  i: integer;
+begin
+  /// Devuelve el minimo y maximo valor dentro de una tabla
+  /// ALM - Almacenes
+  /// ART - Articulos SIN FAMILIA SISTEMA
+  /// CAR - Articulos de Empresa-Ejercicio-Canal SIN FAMILIA SISTEMA
+  /// CTA - Cuentas Contables de ultimo nivel
+  /// FAM - Familias SIN FAMILIA SISTEMA
+  /// PE1 - Periodos mensuales
+  /// RFP - Referencia de Proveedor (Modelo de Tallas y Colores)
+  /// GRT - Grupo de Tallas
+  /// AGA - Agrupacin de Agentes
+  /// AGC - Agrupacion de Clientes
+  /// AGE - Agrupacion de Agentes
+  /// SER - Series
+  /// HOR - Horario
+
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      if (Tipo = 'ALM') then
+        SQL.Text := 'SELECT MIN(ALMACEN), MAX(ALMACEN) FROM ART_ALMACENES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'ART') then
+        SQL.Text := 'SELECT MIN(ARTICULO), MAX(ARTICULO) FROM ART_ARTICULOS WHERE EMPRESA = :EMPRESA AND FAMILIA <> '''
+          + Entorno.FamSistema + '''';
+      if (Tipo = 'CAR') then
+        SQL.Text :=
+          'SELECT MIN(C.ARTICULO), MAX(C.ARTICULO) FROM CON_CUENTAS_GES_ART C JOIN ART_ARTICULOS A ON C.ID_A = A.ID_A WHERE C.EMPRESA = :EMPRESA AND C.EJERCICIO = :EJERCICIO AND C.CANAL = :CANAL AND A.FAMILIA <> '''
+          + Entorno.FamSistema + '''';
+      if (Tipo = 'CTA') then
+        SQL.Text :=
+          'SELECT MIN(CUENTA), MAX(CUENTA) FROM CON_CUENTAS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND CANAL = :CANAL AND TIPO = 5 AND PGC = '
+          + IntToStr(Entorno.PGC);
+      if (Tipo = 'FAM') then
+        SQL.Text := 'SELECT MIN(FAMILIA), MAX(FAMILIA) FROM ART_FAMILIAS WHERE EMPRESA = :EMPRESA AND FAMILIA <> ''' +
+          Entorno.FamSistema + '''';
+      if (Tipo = 'PE1') then
+        SQL.Text :=
+          'SELECT MIN(PERIODO), MAX(PERIODO) FROM EMP_PERIODOS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND TIPO = 1';
+      if (Tipo = 'RFP') then
+        SQL.Text := 'SELECT MIN(REF_PROVEEDOR), MAX(REF_PROVEEDOR) FROM ART_ARTICULOS_MODELOS WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'GRT') then
+        SQL.Text := 'SELECT MIN(GRUPO), MAX(GRUPO) FROM ART_GRUPOS_TALLAS';
+      if (Tipo = 'PRO') then
+        SQL.Text := 'SELECT MIN(PROVEEDOR), MAX(PROVEEDOR) FROM EMP_PROVEEDORES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'AGA') then
+        SQL.Text := 'SELECT MIN(AGRUPACION), MAX(AGRUPACION) FROM VER_AGRUPACIONES_ART_EF WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'AGC') then
+        SQL.Text := 'SELECT MIN(AGRUPACION), MAX(AGRUPACION) FROM VER_AGRUPACIONES_CLIENTE WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'AGE') then
+        SQL.Text := 'SELECT MIN(AGRUPACION), MAX(AGRUPACION) FROM VER_AGRUPACIONES_AGENTES_EF WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'SER') then
+        SQL.Text :=
+          'SELECT MIN(SERIE), MAX(SERIE) FROM EMP_SERIES WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND CANAL = :CANAL AND ACTIVO = 1';
+      if (Tipo = 'HOR') then
+        SQL.Text := 'SELECT MIN(HORARIO), MAX(HORARIO) FROM OPE_HORARIOS WHERE EMPRESA = :EMPRESA';
+
+      for i := 0 to Params.Count - 1 do
+      begin
+        if Params[i].Name = 'EMPRESA' then
+        begin
+          if (Empresa = 0) then
+            ParamByName('EMPRESA').AsInteger := Entorno.Empresa
+          else
+            ParamByName('EMPRESA').AsInteger := Empresa;
+        end;
+        if Params[i].Name = 'EJERCICIO' then
+        begin
+          if (Ejercicio = 0) then
+            ParamByName('EJERCICIO').AsInteger := Entorno.Ejercicio
+          else
+            ParamByName('EJERCICIO').AsInteger := Ejercicio;
+        end;
+        if Params[i].Name = 'CANAL' then
+        begin
+          if (Canal = 0) then
+            ParamByName('CANAL').AsInteger := Entorno.Canal
+          else
+            ParamByName('CANAL').AsInteger := Canal;
+        end;
+      end;
+
+      Open;
+      Min := FieldByName('MIN').AsString;
+      Max := FieldByName('MAX').AsString;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+procedure DameMinMax(Tipo: string; var Min, Max: integer; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+var
+  i: integer;
+begin
+  /// Devuelve el minimo y maximo valor dentro de una tabla
+  /// TER - Terceros
+  /// CLI - Clientes
+  /// PRO - Proveedores
+  /// ACR - Acreedores
+  /// AGE - Agente
+  /// AGC - Agente-EEC
+  /// CAN - Canales
+  /// CAM - Campañas
+  /// BAN - Bancos
+  /// EMP - Empleado
+  /// IDE - Id Empleado
+  /// CAL - Calendario
+  /// TIN - Tipo de Incidencia
+  /// USU - Usuario
+  /// PRY - Proyecto
+
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      if (Tipo = 'TER') then
+        SQL.Text := 'SELECT MIN(TERCERO), MAX(TERCERO) FROM SYS_TERCEROS';
+      if (Tipo = 'CLI') then
+        SQL.Text := 'SELECT MIN(CLIENTE), MAX(CLIENTE) FROM EMP_CLIENTES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'PRO') then
+        SQL.Text := 'SELECT MIN(PROVEEDOR), MAX(PROVEEDOR) FROM EMP_PROVEEDORES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'ACR') then
+        SQL.Text := 'SELECT MIN(ACREEDOR), MAX(ACREEDOR) FROM EMP_ACREEDORES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'AGE') then
+        SQL.Text := 'SELECT MIN(AGENTE), MAX(AGENTE) FROM EMP_AGENTES WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'AGC') then
+        SQL.Text :=
+          'SELECT MIN(AGENTE), MAX(AGENTE) FROM CON_CUENTAS_GES_AGE WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND CANAL = :CANAL';
+      if (Tipo = 'CAN') then
+        SQL.Text :=
+          'SELECT MIN(CANAL), MAX(CANAL) FROM EMP_CANALES WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND ACTIVO = 1';
+      if (Tipo = 'CAM') then
+        SQL.Text :=
+          'SELECT MIN(CAMPANYA), MAX(CAMPANYA) FROM EMP_CAMPANYAS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND ACTIVA = 1';
+      if (Tipo = 'BAN') then
+        SQL.Text := 'SELECT MIN(BANCO), MAX(BANCO) FROM EMP_BANCOS WHERE EMPRESA = :EMPRESA AND ACTIVO = 1';
+      if (Tipo = 'EMP') then
+        SQL.Text := 'SELECT MIN(EMPLEADO), MAX(EMPLEADO) FROM OPE_EMPLEADO WHERE EMPRESA = :EMPRESA AND ACTIVO = 1';
+      if (Tipo = 'IDE') then
+        SQL.Text :=
+          'SELECT MIN(ID_EMPLEADO), MAX(ID_EMPLEADO) FROM OPE_EMPLEADO WHERE EMPRESA = :EMPRESA AND ACTIVO = 1';
+      if (Tipo = 'CAL') then
+        SQL.Text := 'SELECT MIN(CALENDARIO), MAX(CALENDARIO) FROM OPE_CALENDARIO_C WHERE EMPRESA = :EMPRESA';
+      if (Tipo = 'TIN') then
+        SQL.Text := 'SELECT MIN(ID_INCIDENCIA), MAX(ID_INCIDENCIA) FROM PRO_SYS_TIPO_INCIDENCIA';
+      if (Tipo = 'USU') then
+        SQL.Text := 'SELECT MIN(USUARIO), MAX(USUARIO) FROM SYS_USUARIOS';
+      if (Tipo = 'PRY') then
+        SQL.Text := 'SELECT MIN(PROYECTO), MAX(PROYECTO) FROM EMP_PROYECTOS WHERE EMPRESA = :EMPRESA';
+
+      for i := 0 to Params.Count - 1 do
+      begin
+        if Params[i].Name = 'EMPRESA' then
+        begin
+          if (Empresa = 0) then
+            ParamByName('EMPRESA').AsInteger := Entorno.Empresa
+          else
+            ParamByName('EMPRESA').AsInteger := Empresa;
+        end;
+        if Params[i].Name = 'EJERCICIO' then
+        begin
+          if (Ejercicio = 0) then
+            ParamByName('EJERCICIO').AsInteger := Entorno.Ejercicio
+          else
+            ParamByName('EJERCICIO').AsInteger := Ejercicio;
+        end;
+        if Params[i].Name = 'CANAL' then
+        begin
+          if (Canal = 0) then
+            ParamByName('CANAL').AsInteger := Entorno.Canal
+          else
+            ParamByName('CANAL').AsInteger := Canal;
+        end;
+      end;
+
+      Open;
+      Min := FieldByName('MIN').AsInteger;
+      Max := FieldByName('MAX').AsInteger;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+procedure DameMinMax(Tipo: string; var Min, Max: TDateTime; Empresa: integer = 0; Ejercicio: integer = 0;
+  Canal: integer = 0); overload;
+var
+  i: integer;
+begin
+  /// Devuelve el minimo y maximo valor dentro de una tabla
+  /// PEC - Fechas de Pedidos de cliente
+  /// EJE - Apertura y cierre de ejercicio
+  /// PER - Periodo
+
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      if (Tipo = 'PEC') then
+        SQL.Text :=
+          'SELECT MIN(FECHA), MAX(FECHA) FROM GES_CABECERAS_S WHERE EMPRESA = :EMPRESA AND EJERCICIO =:EJERCICIO AND CANAL=:CANAL AND TIPO = ''PEC''';
+      if (Tipo = 'EJE') then
+        SQL.Text :=
+          'SELECT MIN(APERTURA), MAX(CIERRE) FROM EMP_EJERCICIOS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO';
+      if (Tipo = 'PER') then
+        SQL.Text :=
+          'SELECT MIN(DESDE), MAX(HASTA) FROM EMP_PERIODOS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO';
+      if (Tipo >= 'P01') and (Tipo <= 'P12') then
+        SQL.Text :=
+          'SELECT MIN(DESDE), MAX(HASTA) FROM EMP_PERIODOS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND PERIODO = '''
+          + Copy(Tipo, 2, 2) + '''';
+
+      for i := 0 to Params.Count - 1 do
+      begin
+        if Params[i].Name = 'EMPRESA' then
+        begin
+          if (Empresa = 0) then
+            ParamByName('EMPRESA').AsInteger := Entorno.Empresa
+          else
+            ParamByName('EMPRESA').AsInteger := Empresa;
+        end;
+        if Params[i].Name = 'EJERCICIO' then
+        begin
+          if (Ejercicio = 0) then
+            ParamByName('EJERCICIO').AsInteger := Entorno.Ejercicio
+          else
+            ParamByName('EJERCICIO').AsInteger := Ejercicio;
+        end;
+        if Params[i].Name = 'CANAL' then
+        begin
+          if (Canal = 0) then
+            ParamByName('CANAL').AsInteger := Entorno.Canal
+          else
+            ParamByName('CANAL').AsInteger := Canal;
+        end;
+      end;
+
+      Open;
+      Min := FieldByName('MIN').AsDateTime;
+      Max := FieldByName('MAX').AsDateTime;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+procedure DameDesdeHastaPeriodo(Periodo: string; var Desde, Hasta: TDateTime; Empresa: integer = 0;
+  Ejercicio: integer = 0);
+begin
+  /// Devuelve el Fechas de periodo
+  if (Empresa = 0) then
+    Empresa := Entorno.Empresa;
+  if (Ejercicio = 0) then
+    Ejercicio := Entorno.Ejercicio;
+
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      SQL.Text :=
+        'SELECT DESDE, HASTA FROM EMP_PERIODOS WHERE EMPRESA = :EMPRESA AND EJERCICIO = :EJERCICIO AND PERIODO = :PERIODO';
+      ParamByName('EMPRESA').AsInteger := Empresa;
+      ParamByName('EJERCICIO').AsInteger := Ejercicio;
+      ParamByName('PERIODO').AsString := Periodo;
+
+      Open;
+      Desde := FieldByName('DESDE').AsDateTime;
+      Hasta := FieldByName('HASTA').AsDateTime;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+function LeeParametro(Param: string; Serie: string = ''): string;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+    try
+      Close;
+      SQL.Text := 'EXECUTE PROCEDURE G_LEE_PARAMETRO(:EMPRESA, :SERIE, :USUARIO, :PARAMETRO)';
+      ParamByName('EMPRESA').AsInteger := Entorno.Empresa;
+      if Serie <> '' then
+        ParamByName('SERIE').AsString := UpperCase(Serie);
+      ParamByName('USUARIO').AsInteger := Entorno.IdUsuario;
+      ParamByName('PARAMETRO').AsString := UpperCase(Param);
+      ExecSQL;
+      Open;
+      Result := FieldByName('VALOR').AsString;
+      Close;
+    finally
+      Free;
+    end;
+  end;
+end;
+
+procedure DameSerieOTaller(L: TLabel);
+begin
+  if (LeeParametro('MODREST003') = 'S') then
+    L.Caption := 'Taller'
+  else
+    L.Caption := 'Serie'
+end;
+
+function RecodeTime(const AValue: TDateTime; const AHour, AMinute, ASecond, AMilliSecond: Word): TDateTime;
+begin
+  Result := RecodeDateTime(AValue, RecodeLeaveFieldAsIs, RecodeLeaveFieldAsIs, RecodeLeaveFieldAsIs, AHour, AMinute,
+    ASecond, AMilliSecond);
+end;
+
+// Añadir la hora a una fecha
+function HourIntoDate(MyDate: TDateTime; const MyHour: string): TDateTime;
+var
+  auxReal: real;
+  auxDate: TDateTime;
+begin
+  auxDate := StrToTime(MyHour);
+  auxReal := Frac(auxDate);
+  Result := Trunc(MyDate) + auxReal;
+end;
+
+function QuitarAcentos(const Texto: string): string;
+const
+  ConAcento = 'áéíóúÁÉÍÓÚàèìòùÀÈÌÒÙâêîôûÂÊÎÔÛäëïöüÄËÏÖÜãõÃÕçÇ';
+  SinAcento = 'aeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaoAOcC';
+var
+  i: integer;
+begin
+  Result := Texto;
+  for i := 1 to Length(ConAcento) do
+    Result := StringReplace(Result, ConAcento[i], SinAcento[i], [rfReplaceAll]);
+end;
+
+function Contiene(Frase, Texto: string): Boolean;
+begin
+  Result := Pos(Frase, Texto) > 0;
+end;
+
+function CrearDiccionarioNumeros: TStringList;
+begin
+  Result := TStringList.Create;
+  Result.CaseSensitive := False;
+
+  // Unidades
+  Result.Add('cero=0');
+  Result.Add('uno=1');
+  Result.Add('un=1');
+  Result.Add('dos=2');
+  Result.Add('tres=3');
+  Result.Add('cuatro=4');
+  Result.Add('cinco=5');
+  Result.Add('seis=6');
+  Result.Add('siete=7');
+  Result.Add('ocho=8');
+  Result.Add('nueve=9');
+
+  // Dieces especiales
+  Result.Add('diez=10');
+  Result.Add('once=11');
+  Result.Add('doce=12');
+  Result.Add('trece=13');
+  Result.Add('catorce=14');
+  Result.Add('quince=15');
+
+  // Veintes
+  Result.Add('veinte=20');
+  Result.Add('veintiuno=21');
+  Result.Add('veintidos=22');
+  Result.Add('veintidós=22');
+  Result.Add('veintitres=23');
+  Result.Add('veintitrés=23');
+  Result.Add('veinticuatro=24');
+  Result.Add('veinticinco=25');
+  Result.Add('veintiseis=26');
+  Result.Add('veintiséis=26');
+  Result.Add('veintisiete=27');
+  Result.Add('veintiocho=28');
+  Result.Add('veintinueve=29');
+
+  // Decenas
+  Result.Add('treinta=30');
+  Result.Add('cuarenta=40');
+  Result.Add('cincuenta=50');
+  Result.Add('sesenta=60');
+  Result.Add('setenta=70');
+  Result.Add('ochenta=80');
+  Result.Add('noventa=90');
+
+  // Centenas
+  Result.Add('cien=100');
+  Result.Add('ciento=100'); // "ciento uno"
+end;
+
+function TextoANumero(const Texto: string): integer;
+var
+  Palabras: TArray<string>;
+  i: integer;
+  Total, Actual, Temp: integer;
+  EnMiles: Boolean;
+  Palabra: string;
+begin
+  Result := 0;
+  if Texto.IsEmpty then
+    Exit;
+
+  // Preprocesar: quitar "y", normalizar espacios, a minúsculas
+  var
+  TextoLimpio := LowerCase(Texto).Replace(' y ', ' ').Replace('  ', ' ').Trim;
+
+  // Dividir en palabras
+  Palabras := TextoLimpio.Split([' ']);
+
+  Total := 0;
+  Actual := 0;
+  EnMiles := False;
+
+  for i := 0 to High(Palabras) do
+  begin
+    Palabra := Palabras[i];
+    Temp := -1; // Valor por defecto: no reconocido
+
+    // 🔢 Convertir palabra a número
+    if Palabra = 'cero' then
+      Temp := 0
+    else if (Palabra = 'uno') or (Palabra = 'un') then
+      Temp := 1
+    else if Palabra = 'dos' then
+      Temp := 2
+    else if Palabra = 'tres' then
+      Temp := 3
+    else if Palabra = 'cuatro' then
+      Temp := 4
+    else if Palabra = 'cinco' then
+      Temp := 5
+    else if Palabra = 'seis' then
+      Temp := 6
+    else if Palabra = 'siete' then
+      Temp := 7
+    else if Palabra = 'ocho' then
+      Temp := 8
+    else if Palabra = 'nueve' then
+      Temp := 9
+    else if Palabra = 'diez' then
+      Temp := 10
+    else if Palabra = 'once' then
+      Temp := 11
+    else if Palabra = 'doce' then
+      Temp := 12
+    else if Palabra = 'trece' then
+      Temp := 13
+    else if Palabra = 'catorce' then
+      Temp := 14
+    else if Palabra = 'quince' then
+      Temp := 15
+    else if (Palabra = 'dieciséis') or (Palabra = 'dieciseis') then
+      Temp := 16
+    else if Palabra = 'diecisiete' then
+      Temp := 17
+    else if Palabra = 'dieciocho' then
+      Temp := 18
+    else if Palabra = 'diecinueve' then
+      Temp := 19
+    else if Palabra = 'veinte' then
+      Temp := 20
+    else if (Palabra = 'veintiuno') or (Palabra = 'veintiún') then
+      Temp := 21
+    else if (Palabra = 'veintidós') or (Palabra = 'veintidos') then
+      Temp := 22
+    else if (Palabra = 'veintitrés') or (Palabra = 'veintitres') then
+      Temp := 23
+    else if Palabra = 'veinticuatro' then
+      Temp := 24
+    else if Palabra = 'veinticinco' then
+      Temp := 25
+    else if (Palabra = 'veintiséis') or (Palabra = 'veintiseis') then
+      Temp := 26
+    else if Palabra = 'veintisiete' then
+      Temp := 27
+    else if Palabra = 'veintiocho' then
+      Temp := 28
+    else if Palabra = 'veintinueve' then
+      Temp := 29
+    else if Palabra = 'treinta' then
+      Temp := 30
+    else if Palabra = 'cuarenta' then
+      Temp := 40
+    else if Palabra = 'cincuenta' then
+      Temp := 50
+    else if Palabra = 'sesenta' then
+      Temp := 60
+    else if Palabra = 'setenta' then
+      Temp := 70
+    else if Palabra = 'ochenta' then
+      Temp := 80
+    else if Palabra = 'noventa' then
+      Temp := 90
+    else if (Palabra = 'cien') or (Palabra = 'ciento') then
+      Temp := 100
+    else if (Palabra = 'doscientos') or (Palabra = 'doscientas') then
+      Temp := 200
+    else if (Palabra = 'trescientos') or (Palabra = 'trescientas') then
+      Temp := 300
+    else if (Palabra = 'cuatrocientos') or (Palabra = 'cuatrocientas') then
+      Temp := 400
+    else if (Palabra = 'quinientos') or (Palabra = 'quinientas') then
+      Temp := 500
+    else if (Palabra = 'seiscientos') or (Palabra = 'seiscientas') then
+      Temp := 600
+    else if (Palabra = 'setecientos') or (Palabra = 'setecientas') then
+      Temp := 700
+    else if (Palabra = 'ochocientos') or (Palabra = 'ochocientas') then
+      Temp := 800
+    else if (Palabra = 'novecientos') or (Palabra = 'novecientas') then
+      Temp := 900
+    else if Palabra = 'mil' then
+    begin
+      if Actual = 0 then
+        Actual := 1;
+      Total := Total + Actual * 1000;
+      Actual := 0;
+      EnMiles := True;
+      Continue;
+    end;
+
+    if Temp = -1 then
+      Continue; // Ignorar palabras no reconocidas
+
+    if Temp = 100 then
+    begin
+      // "cien" solo, sin más: 100
+      if (i = High(Palabras)) or (Palabras[i + 1] = 'mil') then
+        Actual := Actual + 100
+      else
+        Actual := Actual + 100; // "ciento" siempre suma 100
+    end
+    else if Temp >= 100 then
+    begin
+      Actual := Actual + Temp;
+    end
+    else if Temp >= 10 then
+    begin
+      Actual := Actual + Temp;
+    end
+    else if Temp >= 1 then
+    begin
+      Actual := Actual + Temp;
+    end;
+
+    // Si la siguiente palabra es "mil", procesamos
+    if (i < High(Palabras)) and (Palabras[i + 1] = 'mil') then
+    begin
+      if Actual = 0 then
+        Actual := 1;
+      Total := Total + Actual * 1000;
+      Actual := 0;
+      EnMiles := True;
+    end;
+  end;
+
+  Result := Total + Actual;
+end;
+
+procedure Hablar(Frase: string);
+begin
+  // (voz de MaxFactu no incluida en Merge13)
+end;
+
+function ConsultarOllamaDirecto(const Pregunta, SystemPrompt, Modelo: string; const js: Boolean = False): string;
+var
+  IdHTTP: TIdHTTP;
+  RequestBody, FullPrompt: string;
+  Response: string;
+  JO: TJSONObject;
+  Stream: TStringStream;
+begin
+  Result := '';
+
+  // Formato especial para llama3: system + user
+  FullPrompt := '<|system|>' + SystemPrompt + '<|end|><|user|>' + Pregunta + '<|end|><|assistant|>';
+
+  IdHTTP := TIdHTTP.Create(nil);
+  try
+    IdHTTP.Request.ContentType := 'application/json';
+    IdHTTP.ReadTimeout := 30000; // 30 segundos, por si el modelo es lento
+
+    // Cuerpo de la solicitud
+    if js then
+      RequestBody := Format('{"model":"' + Modelo +
+        '","prompt":"%s","stream":false,"format":"json","options":{"temperature":0.1,"num_ctx":512}}',
+        [StringReplace(StringReplace(FullPrompt, '\', '\\', [rfReplaceAll]), '"', '\"', [rfReplaceAll])])
+    else
+      RequestBody := Format('{"model":"' + Modelo +
+        '","prompt":"%s","stream":false,"options":{"temperature":0.1,"num_ctx":512}}',
+        [StringReplace(StringReplace(FullPrompt, '\', '\\', [rfReplaceAll]), '"', '\"', [rfReplaceAll])]);
+
+    Stream := TStringStream.Create(RequestBody, TEncoding.UTF8);
+    try
+      Response := IdHTTP.Post('http://10.10.47.15:11434/api/generate', Stream);
+    finally
+      Stream.Free;
+    end;
+
+    // Parsear JSON
+    JO := TJSONObject.ParseJSONValue(Response) as TJSONObject;
+    if Assigned(JO) then
+      try
+        if JO.TryGetValue('response', Result) then
+        begin
+          // Opcional: limpiar espacios o saltos de línea
+          Result := Trim(Result);
+        end;
+      finally
+        JO.Free;
+      end;
+
+  except
+    on E: Exception do
+      Result := ''; // o loguea el error: E.Message
+  end;
+
+  IdHTTP.Free;
+end;
+
+function Consultarkoboldcpp(Pregunta: string): string;
+var
+  IdHTTP: TIdHTTP;
+  Stream: TStringStream;
+  RequestBody, Response: string;
+begin
+  IdHTTP := TIdHTTP.Create(nil);
+  try
+    IdHTTP.Request.ContentType := 'application/json';
+    IdHTTP.Request.Connection := 'keep-alive';
+    IdHTTP.ReadTimeout := 30000;
+
+    RequestBody := '{' +
+      '  "prompt": "Tu tarea es extraer solo el JSON con las claves nombre, numero e iva de frases como esta: ' +
+      '  ''crea una familia de turbinas numero 44 y el iva normal''. ' +
+      '  Usa 1 para iva normal, 2 para reducido. Devuelve solo el JSON sin explicaciones.' +
+      '\n\nEjemplo:\nEntrada: ''crea una familia de motores numero 12 con iva reducido''\nSalida: {\"nombre\":\"motores\",\"numero\":12,\"iva\":2}'
+      + '\n\nAhora responde:\nEntrada: ''' + Pregunta + '''\nSalida:",' + '  "max_length": 100,' +
+      '  "temperature": 0.1' + '}';
+
+    Stream := TStringStream.Create(RequestBody, TEncoding.UTF8);
+    try
+    //  Result := IdHTTP.Post(FMain.Edit2.Text + '/api/v1/generate', Stream);
+    finally
+      Stream.Free;
+    end;
+  except
+    on E: Exception do
+      ShowMessage('Error: ' + E.Message);
+  end;
+  IdHTTP.Free;
+end;
+
+procedure ExtraerDatosDelJSON(const RespuestaJSON: string; out Nombre: string; out Numero: integer; out Iva: integer);
+var
+  LJSONValue: TJSONValue;
+  LJSONObject: TJSONObject;
+  LResultsArray: TJSONArray;
+  LResultObject: TJSONObject;
+  LText: string;
+  LInnerJSON: TJSONValue;
+  LInnerObject: TJSONObject;
+begin
+  // Paso 1: Parsear el JSON completo
+  LJSONValue := TJSONObject.ParseJSONValue(RespuestaJSON);
+  try
+    if not(LJSONValue is TJSONObject) then
+      raise Exception.Create('Respuesta no es un objeto JSON válido.');
+
+    LJSONObject := LJSONValue as TJSONObject;
+
+    // Paso 2: Obtener el array "results"
+    if not LJSONObject.TryGetValue<TJSONArray>('results', LResultsArray) then
+      raise Exception.Create('No se encontró el campo "results".');
+
+    if LResultsArray.Count = 0 then
+      raise Exception.Create('El array "results" está vacío.');
+
+    LResultObject := LResultsArray.Items[0] as TJSONObject;
+
+    // Paso 3: Obtener el campo "text" (string con JSON interno)
+    if not LResultObject.TryGetValue<string>('text', LText) then
+      raise Exception.Create('No se encontró el campo "text" en el primer resultado.');
+
+    // Paso 4: Parsear el JSON interno
+    LInnerJSON := TJSONObject.ParseJSONValue(LText);
+    try
+      if not(LInnerJSON is TJSONObject) then
+        raise Exception.Create('El contenido de "text" no es un objeto JSON válido.');
+
+      LInnerObject := LInnerJSON as TJSONObject;
+
+      // Extraer los campos
+      if not LInnerObject.TryGetValue<string>('nombre', Nombre) then
+        Nombre := '';
+      if not LInnerObject.TryGetValue<integer>('numero', Numero) then
+        Numero := 0;
+      if not LInnerObject.TryGetValue<integer>('iva', Iva) then
+        Iva := 0;
+
+    finally
+      LInnerJSON.Free;
+    end;
+
+  finally
+    LJSONValue.Free;
+  end;
+end;
+
+function DamePromPt(Nombre: string): string;
+begin
+  Result := '';
+  if Nombre = 'CrearFamilia' then
+    Result := 'Eres un asistente especializado en crear familias de productos desde comandos de voz. ' +
+      'Tu tarea es analizar una frase natural y extraer tres datos: ' +
+      '1. El número de familia (puede ser alfanumérico, como "303", "45t", "55h"). ' +
+      '2. El título o nombre o descripoción de la familia (nombre descriptivo). ' +
+      '3. El tipo de IVA (máximo 8 opciones). ' +
+
+      'El tipo de IVA debe convertirse a su valor exacto según esta tabla: ' + '0 → Exento de IVA, ' + '1 → Normal, ' +
+      '2 → Reducido, ' + '3 → Super-Reducido, ' + '4 → Agr., Gan. y P., ' + '5 → Aduana, ' + '6 → NO DEDUCIBLE, ' +
+      '7 → LEASING. ' +
+
+      'Reglas: ' + '- Si el usuario dice "IVA normal", devuelve "1".' + '- Si dice "reducido", devuelve "2". ' +
+      '- Si dice "no deducible", devuelve "6". ' + '- Si dice "exento", devuelve "0". ' +
+      '- Si dice "Créame la familia 303 con el nombre RECAMBIOS DE EMBRAGUE y el IVA Normal devuelve ' +
+      '  "{"familia":"303","titulo":"RECAMBIOS DE EMBRAGUE","iva":1}".' +
+      '- Si la frase no contiene IVA , devuelve 1 en el iva. ' +
+      '- Si la frase no contiene nombre o titulo o algo que sugiera titulo , devuelve "titulo":"Nueva Familia" ' +
+      '- Si la frase no contiene un número  , devuelve "familia": 0 ' +
+      '- Siempre tienes que devolver "familia", "titulo", "iva".si no hay número devuelve 0 en la familia, ' +
+      ' si no hay nombre o titulo  devuelve "titulo":"Nueva Familia" ' + ' si no hay IVA  devuelve "iva":1 ' +
+
+      'Devuelve un JSON con estas claves: "familia", "titulo", "iva". ' + 'No añadas explicaciones. Solo el JSON.';
+
+  if Nombre = 'LocateFamilia' then
+    Result := ' Eres un asistente especializado en interpretar comandos de voz para posicionar el cursor en un registro de la tabla "Familias",'
+      + ' que tiene dos columnas: `FAMILIA` (cadena, ej: "09", "12") y `TITULO` (texto descriptivo).' +
+
+      ' TU TAREA ES MUY SIMPLE Y RÍGIDA:' +
+      ' - Analiza el comando de voz y busca EXACTAMENTE el valor que aparece en la base de datos.' +
+      ' - NO INVENTES, NO COMPLETES, NO ADIVINES, NO AGREGUES PALABRAS.' +
+      ' - Si el usuario dice “selecciona la familia X”, donde X es un número (9, 09, 12), devuelve el valor de FAMILIA como cadena con dos dígitos: "09", "12". Si ya viene con cero, manténlo.'
+      + ' Si el usuario dice los numeros con palabras, convierte a numero y devuelve lo que te pido pero en formato numérico '
+      + ' - Si el usuario dice “selecciona [algo]”, donde [algo] es una frase descriptiva, entonces:' +
+      '     • Busca en la base de datos si hay algún `TITULO` que contenga exactamente esa frase (sin añadir ni quitar palabras).'
+      + '     • SI LO ENCUENTRAS, devuelve EL VALOR COMPLETO DEL CAMPO TITULO tal cual está en la base (incluyendo mayúsculas/minúsculas).'
+      + '     • SI NO LO ENCUENTRAS, devuelve "" (cadena vacía).' +
+      ' - Si el comando puede referirse a ambos (número y texto), prioriza FAMILIA si hay un número claro.' +
+      ' - Si no encuentras ninguna coincidencia, devuelve ambos campos vacíos: {"familia": "", "titulo": ""}.' +
+      ' - Nunca devuelvas más de una línea. No uses explicaciones, ni comentarios, ni texto adicional.' +
+
+      ' REGLA DE ORO: ' + '   ¡NUNCA SUPONGAS QUE UNA PALABRA EXISTE EN LA BASE DE DATOS! ' +
+      '   SOLO DEVUELVE LO QUE YA ESTÁ EN LA BASE. SI NO LO VES, NO LO PONGAS.' +
+
+      ' Ejemplos (usando valores reales que podrían existir):' +
+      ' Entrada: "Selecciona la familia 9"        Salida: {"familia": "09", "titulo": ""}' +
+      ' Entrada: "Selecciona la familia 09"       Salida: {"familia": "09", "titulo": ""}' +
+      ' Entrada: "Selecciona filtros"             Salida: {"familia": "", "titulo": "Filtros"}' +
+      ' Entrada: "Ponme en frenos traseros"       Salida: {"familia": "", "titulo": "Frenos Traseros"}' +
+      ' Entrada: "Busca amortiguadores"           Salida: {"familia": "", "titulo": "Amortiguadores delanteros"}' +
+      ' Entrada: "Selecciona elementos de motor"  Salida: {"familia": "", "titulo": "Elementos de Motor"}' +
+
+      ' ¡IMPORTANTE! Si el usuario dice: "Selecciona filtros de aire", pero en tu base de datos el título es solo "Filtros", entonces debes responder: '
+      + ' {"familia": "", "titulo": ""} ← ¡NUNCA pongas "filtros de aire" si no existe!' +
+
+      ' Ahora interpreta este comando: ';
+end;
+
+procedure CallOllamaWithTools(const UserPrompt: string; var Response: string);
+var
+  HTTP: TIdHTTP;
+  JSONObj, ToolObj, FuncObj, ParamsObj: TJSONObject;
+  MessagesArray, ToolsArray: TJSONArray;
+  ResponseJSON: TJSONObject;
+  ToolCalls: TJSONArray;
+  i: integer;
+  ToolName, ToolArgs, ToolResult: string;
+  RequestBody: string;
+  ResponseText: string;
+begin
+  HTTP := TIdHTTP.Create(nil);
+  try
+    // Configuración básica de HTTP
+    HTTP.Request.ContentType := 'application/json';
+    HTTP.Request.UserAgent := 'Delphi-Indy-Ollama-Client';
+
+    // Construir el JSON de solicitud
+    JSONObj := TJSONObject.Create;
+    try
+      JSONObj.AddPair('model', 'llama3-groq-tool-use:8b');
+
+      // Mensajes
+      MessagesArray := TJSONArray.Create;
+      MessagesArray.AddElement(TJSONObject.Create.AddPair('role', 'system').AddPair('content',
+        'Eres un asistente que usa tools para responder.'));
+      MessagesArray.AddElement(TJSONObject.Create.AddPair('role', 'user').AddPair('content', UserPrompt));
+      JSONObj.AddPair('messages', MessagesArray);
+
+      // Tools
+      ToolsArray := TJSONArray.Create;
+
+      // Tool 1: get_fecha
+      ToolObj := TJSONObject.Create;
+      ToolObj.AddPair('type', 'function');
+      FuncObj := TJSONObject.Create;
+      FuncObj.AddPair('name', 'get_fecha');
+      FuncObj.AddPair('description', 'Obtiene la fecha y hora actual del sistema.');
+      ParamsObj := TJSONObject.Create; // Sin parámetros
+      FuncObj.AddPair('parameters', ParamsObj);
+      ToolObj.AddPair('function', FuncObj);
+      ToolsArray.AddElement(ToolObj);
+
+      // Tool 2: query_db
+      ToolObj := TJSONObject.Create;
+      ToolObj.AddPair('type', 'function');
+      FuncObj := TJSONObject.Create;
+      FuncObj.AddPair('name', 'query_db');
+      FuncObj.AddPair('description', 'Ejecuta una consulta SQL en la base de datos y devuelve resultados.');
+      ParamsObj := TJSONObject.Create.AddPair('type', 'object')
+        .AddPair('properties', TJSONObject.Create.AddPair('sql', TJSONObject.Create.AddPair('type', 'string')
+        .AddPair('description', 'Consulta SQL a ejecutar.')));
+      ParamsObj.AddPair('required', TJSONArray.Create.Add('sql'));
+      FuncObj.AddPair('parameters', ParamsObj);
+      ToolObj.AddPair('function', FuncObj);
+      ToolsArray.AddElement(ToolObj);
+
+      JSONObj.AddPair('tools', ToolsArray);
+      JSONObj.AddPair('stream', False); // Respuesta completa
+
+      RequestBody := JSONObj.ToJSON;
+    except
+      on E: Exception do
+      begin
+        ShowMessage('Error preparando JSON: ' + E.Message);
+        Exit;
+      end;
+    end;
+
+    // Realizar POST con TIdHTTP
+    try
+      ResponseText := HTTP.Post('http://10.10.47.15:11434/api/chat', RequestBody);
+    except
+      on E: Exception do
+      begin
+        Response := 'Error de red: ' + E.Message;
+        Exit;
+      end;
+    end;
+
+    // Procesar respuesta
+    if ResponseText <> '' then
+    begin
+      ResponseJSON := TJSONObject.ParseJSONValue(ResponseText) as TJSONObject;
+      try
+        // Verificar si hay tool_calls
+        if ResponseJSON.TryGetValue<TJSONArray>('message.tool_calls', ToolCalls) then
+        begin
+          for i := 0 to ToolCalls.Count - 1 do
+          begin
+            ToolName := (ToolCalls.Items[i] as TJSONObject).GetValue<string>('name');
+            ToolArgs := (ToolCalls.Items[i] as TJSONObject).GetValue<TJSONObject>('arguments').ToJSON;
+
+            if ToolName = 'get_fecha' then
+              ToolResult := DateTimeToStr(Now)
+            else if ToolName = 'query_db' then
+            begin
+              // Implementa tu lógica de DB aquí
+              ToolResult := 'Resultados de DB: ...'; // ← ¡Reemplaza esto!
+            end
+            else
+              ToolResult := 'Tool desconocido: ' + ToolName;
+
+            Response := Response + 'Tool llamada: ' + ToolName + ' -> ' + ToolResult + #13#10;
+          end;
+        end
+        else
+        begin
+          // Respuesta directa del modelo
+          if ResponseJSON.TryGetValue<TJSONObject>('message', ResponseJSON) then
+            Response := ResponseJSON.GetValue<string>('content')
+          else
+            Response := 'Respuesta vacía';
+        end;
+      finally
+        ResponseJSON.Free;
+      end;
+    end
+    else
+    begin
+      Response := 'Respuesta vacía del servidor.';
+    end;
+
+  finally
+    HTTP.Free;
+  end;
+end;
+
+function DameIPLocal: string;
+var
+  p : PHostEnt;
+  s : array[0..128] of char;
+  p2 : PAnsiChar;
+  wVersionRequested : word;
+  wsaData : TWSAData;
+begin
+  // Arranca la librería WinSock
+  try
+     wVersionRequested := MAKEWORD(1, 1);
+     WSAStartup(wVersionRequested, wsaData);
+
+     // Obtiene el nombre del PC
+     GetHostName(@s, 128);
+     p := GetHostByName(@s);
+
+     // Obtiene la dirección IP y libera la librería WinSock
+     p2 :=(iNet_ntoa(PInAddr(p^.h_addr_list^)^));
+     Result := Result + p2;
+     WSACleanup;
+  except
+     Result := '';
+  end;
+end;
+
+function DameIPPublica: string;
+var
+  HTMLBody : string;
+  i : integer;
+  IdHTTP : TIdHTTP;
+begin
+  Result := '';
+  try
+     // ¿Estamos conectados a Internet?
+     if WinInet.InternetGetConnectedState(nil, 0) then
+     begin
+        IdHTTP := TIdHTTP.Create(Application);
+        try
+           HTMLBody := IdHTTP.Get('http://checkip.dyndns.org/');
+           // Esta web devuelve : 'Current IP Address: 87.111.157.240'
+
+           for i := 0 to Length(HTMLBody) - 1 do
+              if IsNumeric(HTMLBody[i]) or (HTMLBody[i] = '.') then
+                 Result := Result + HTMLBody[i];
+        finally
+           IdHTTP.Free;
+        end;
+     end;
+  except
+     Result := '';
+  end;
+end;
+
+
+function DameMACLocal: string;
+var  // These are all needed for the WMI querying process
+  Locator : ISWbemLocator;
+  Services : ISWbemServices;
+  SObject : ISWbemObject;
+  ObjSet : ISWbemObjectSet;
+  SProp : ISWbemProperty;
+  Enum : IEnumVariant;
+  Value : cardinal;
+  TempObj : olevariant;
+  Valor : string;
+  Indice : integer;
+  IPAddress : string;
+  IPLocal : string;
+begin
+  // Direccion de IP local del ordenador
+  IPLocal := DameIPLocal;
+  // Busco el indice del adaptador con la IP local
+  Indice := -1;
+  try
+     Locator := CoSWbemLocator.Create;  // Create the Location object
+     // Connect to the WMI service, with the root\cimv2 namespace
+     Services := Locator.ConnectServer('', 'root\cimv2', '', '', '', '', 0, nil);
+     ObjSet := Services.ExecQuery('SELECT Index, IPAddress FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True', 'WQL',
+        wbemFlagReturnImmediately and wbemFlagForwardOnly, nil);
+     Enum := (ObjSet._NewEnum) as IEnumVariant;
+     while (Enum.Next(1, TempObj, Value) = S_OK) do
+     begin
+        SObject := IUnknown(tempObj) as ISWBemObject;
+        SProp := SObject.Properties_.Item('IPAddress', 0);
+        if VarIsNull(SProp.Get_Value) then
+           Valor := ''
+        else
+           Valor := SProp.Get_Value[0];
+
+        IPAddress := Valor;
+
+        // Si la direccion del adaptador es la local, obtengo el indice
+        if (IPLocal = IPAddress) then
+        begin
+           SObject := IUnknown(tempObj) as ISWBemObject;
+           SProp := SObject.Properties_.Item('Index', 0);
+           if VarIsNull(SProp.Get_Value) then
+              Valor := ''
+           else
+              Valor := SProp.Get_Value;
+
+           Indice := StrToIntDef(Valor, 0);
+        end;
+     end;
+  except // Trap any exceptions (Not having WMI installed will cause one!)
+
+  end;
+
+  // Obtengo la MAC del adaptador con el indice obtenido
+  if (Indice >= 0) then
+  begin
+     try
+        Locator := CoSWbemLocator.Create;  // Create the Location object
+        // Connect to the WMI service, with the root\cimv2 namespace
+        Services := Locator.ConnectServer('', 'root\cimv2', '', '', '', '', 0, nil);
+        ObjSet := Services.ExecQuery('SELECT MACAddress FROM Win32_NetworkAdapter WHERE Index = ' + IntToStr(Indice), 'WQL',
+           wbemFlagReturnImmediately and wbemFlagForwardOnly, nil);
+        Enum := (ObjSet._NewEnum) as IEnumVariant;
+        while (Enum.Next(1, TempObj, Value) = S_OK) do
+        begin
+           SObject := IUnknown(tempObj) as ISWBemObject;
+           SProp := SObject.Properties_.Item('MACAddress', 0);
+           if VarIsNull(SProp.Get_Value) then
+              Valor := ''
+           else
+              Valor := SProp.Get_Value;
+
+           Result := Valor;
+        end;
+     except // Trap any exceptions (Not having WMI installed will cause one!)
+        on Exception do
+           Result := 'ERR';
+     end;
+  end
+  else
+     Result := '';
+end;
+
+
+function FormatAmount(const d: double; decimales: integer): string;
+var
+  OldDecimalSeparator : char;
+begin
+  OldDecimalSeparator := FormatSettings.DecimalSeparator; // note: not thread-safe
+  FormatSettings.DecimalSeparator := '.';
+  Result := Format('%.' + IntToStr(decimales) + 'f', [RoundAmount(d, decimales)]); // round explicitly, makes sure that RoundAmount and FormatAmount behaves exactly the same
+  FormatSettings.DecimalSeparator := OldDecimalSeparator;
+end;
+
+function RoundAmount(const d: double; decimales: integer): double;
+begin
+  Result := RoundTo(d, decimales * (-1));
+end;
+
+
+function dame_serie_activa(Serie: string): string;
+var
+  Perfil : integer;
+  SerieRestringida : boolean;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+     try
+        SQL.Text := 'SELECT PERFIL FROM SYS_USUARIOS WHERE USUARIO = :USUARIO';
+        ParamByName('USUARIO').AsInteger := Entorno.IdUsuario;
+        Open;
+        Perfil := FieldByName('PERFIL').AsInteger;
+     finally
+        Free;
+     end;
+  end;
+
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+     try
+        SQL.Add(' SELECT FIRST 1 EMPRESA FROM SYS_USUARIOS_PERFIL_EEC ');
+        SQL.Add(' WHERE ');
+        SQL.Add(' PERFIL = :PERFIL AND ');
+        SQL.Add(' EMPRESA = :EMPRESA AND ');
+        SQL.Add(' EJERCICIO = :EJERCICIO AND ');
+        SQL.Add(' CANAL = :CANAL AND ');
+        SQL.Add(' SERIE = :SERIE ');
+        ParamByName('PERFIL').AsInteger := Perfil;
+        ParamByName('EMPRESA').AsInteger := Entorno.Empresa;
+        ParamByName('EJERCICIO').AsInteger := Entorno.Ejercicio;
+        ParamByName('CANAL').AsInteger := Entorno.Canal;
+        ParamByName('SERIE').AsString := Serie;
+        Open;
+        SerieRestringida := (FieldByName('EMPRESA').AsInteger > 0);
+     finally
+        Free;
+     end;
+  end;
+
+  if (SerieRestringida) then
+  begin
+     // Si la serie esta restringida coge otra que no lo esté
+     // pero siempre dentro del perfil
+     with DameQueryRO(nil, DMMain.DB) do
+     begin
+        try
+           SQL.Add(' SELECT MIN(SERIE) FROM EMP_SERIES ');
+           SQL.Add(' WHERE ');
+           SQL.Add(' EMPRESA = :EMPRESA AND ');
+           SQL.Add(' EJERCICIO = :EJERCICIO AND ');
+           SQL.Add(' CANAL = :CANAL AND ');
+           SQL.Add(' SERIE NOT IN ');
+           SQL.Add(' (SELECT SERIE FROM SYS_USUARIOS_PERFIL_EEC ');
+           SQL.Add(' WHERE ');
+           SQL.Add(' PERFIL = :PERFIL AND ');
+           SQL.Add(' EMPRESA = :EMPRESA AND ');
+           SQL.Add(' EJERCICIO = :EJERCICIO AND ');
+           SQL.Add(' CANAL = :CANAL) ');
+           ParamByName('PERFIL').AsInteger := Perfil;
+           ParamByName('EMPRESA').AsInteger := Entorno.Empresa;
+           ParamByName('EJERCICIO').AsInteger := Entorno.Ejercicio;
+           ParamByName('CANAL').AsInteger := Entorno.Canal;
+           Open;
+           Result := FieldByName('MIN').AsString;
+        finally
+           Free;
+        end;
+     end;
+  end
+  else
+     Result := Serie;
+end;
+
+
+
+
+function GetFileVersion(const FileName: string): string;
+var
+  VerInfoSize, VerValueSize, Dummy: DWORD;
+  VerInfo: Pointer;
+  VerData: PVSFixedFileInfo;
+begin
+  Result := '';
+  VerInfoSize := GetFileVersionInfoSize(PChar(FileName), Dummy);
+  if VerInfoSize = 0 then Exit;
+
+  GetMem(VerInfo, VerInfoSize);
+  try
+    if GetFileVersionInfo(PChar(FileName), 0, VerInfoSize, VerInfo) then
+    begin
+      if VerQueryValue(VerInfo, '\', Pointer(VerData), VerValueSize) then
+      begin
+        with VerData^ do
+        begin
+          Result := Format('%d.%d.%d.%d',
+            [
+              HiWord(dwFileVersionMS), // Major
+              LoWord(dwFileVersionMS), // Minor
+              HiWord(dwFileVersionLS), // Release
+              LoWord(dwFileVersionLS)  // Build
+            ]);
+        end;
+      end;
+    end;
+  finally
+    FreeMem(VerInfo);
+  end;
+end;
+
+ function ExpandirCadena(cadena: string; long: integer = 0): string;
+var
+  cad_ini, cad_fin : string;
+begin
+  if (Long = 0) then
+     Long := LongExpansion;
+
+  if (Pos('.', cadena) = 0) then
+  begin
+     Result := cadena;
+     Exit;
+  end;
+
+  cad_ini := Copy(cadena, 0, Pos('.', cadena) - 1);
+  cad_fin := Copy(cadena, Pos('.', cadena) + 1, Length(cadena));
+
+  if (Length(cad_ini) + Length(cad_fin)) > Long then
+     cad_fin := Copy(cad_fin, Length(cad_fin) - (long - Length(cad_ini) - 1),
+        Length(cad_fin));
+
+  Result := cad_ini + StringOfChar('0', long - Length(cad_ini) - Length(cad_fin)) + cad_fin;
+end;
+
+function LimpiaNIF(Pais, nif: string): string;
+var
+  i : integer;
+begin
+  /// Quita espacios en blanco y lo que no sea numero o letra
+
+  Result := '';
+  for i := 1 to Length(nif) do
+  begin
+     if (nif[i] in ['A'..'Z', 'a'..'z', '0'..'9']) then
+        Result := Result + UpperCase(nif[i])
+     else
+     if Pais = 'CHL' then
+     begin
+        if (nif[i] = '-') then
+           Result := Result + nif[i];
+     end;
+  end;
+end;
+
+
+procedure DameImagenMapa(Lat, Lon: double; Image: TImage;
+  Width: integer = 600; Height: integer = 400; Zoom: integer = 15);
+var
+  Url, basePath, fileName, cacheFile: string;
+  HTTP: TNetHTTPClient;
+  MemStream: TMemoryStream;
+  ImageLoaded: boolean;
+begin
+  LogIni('DameImagenMapa(' + FloatToStr(Lat) + ', ' + FloatToStr(Lon) + ')');
+  ImageLoaded := False;
+
+
+  try
+    basePath := TPath.Combine(TPath.GetCachePath, Entorno.NombrePrograma, 'ImgMapa');
+    if not TDirectory.Exists(basePath) then
+      TDirectory.CreateDirectory(basePath);
+
+    fileName := Format('Mapa_%3.7f-%3.7f-%5dx%5d-%2d.jpg',
+                       [Lat, Lon, Width, Height, Zoom]);
+    fileName := StringReplace(fileName, ',', '_', [rfReplaceAll]);
+    fileName := StringReplace(fileName, ' ', '0', [rfReplaceAll]);
+    cacheFile := TPath.Combine(basePath, fileName);
+
+    // 🎯 Intentar cargar desde caché primero
+    if TFile.Exists(cacheFile) then
+    begin
+      try
+        Image.Picture.LoadFromFile(cacheFile);
+        ImageLoaded := True;
+        Log('Imagen cargada desde CACHÉ');
+      except
+        Log('Error cargando desde caché');
+      end;
+    end;
+
+    // 🌐 Descargar si no estaba en caché
+    if not ImageLoaded then
+    begin
+      Url := Format(
+        'https://app.delfos-online.com/delweb/php/getMapaImagen.php?lat=%s&lon=%s&zoom=%d&width=%d&height=%d',
+        [FloatToStrDec(Lat, '.'), FloatToStrDec(Lon, '.'), Zoom, Width, Height]);
+
+      HTTP := TNetHTTPClient.Create(nil);
+      MemStream := TMemoryStream.Create;
+      try
+        HTTP.ConnectionTimeout := 30000;
+        HTTP.ResponseTimeout := 60000;
+
+        HTTP.Get(Url, MemStream);
+        MemStream.Position := 0;
+        Image.Picture.LoadFromStream(MemStream);
+        ImageLoaded := True;
+
+        try
+          MemStream.Position := 0;
+          MemStream.SaveToFile(cacheFile);
+          Log('Imagen cacheada');
+        except
+          Log('No se pudo cachear');
+        end;
+
+      except
+        on E: Exception do
+          Log('Error descargando: ' + E.Message);
+      end;
+      MemStream.Free;
+      HTTP.Free;
+    end;
+
+  finally
+    if not ImageLoaded then
+      Image.Picture := nil;
+    LogFin('ImagenCargada = ' + BoolToStr(ImageLoaded, True));
+  end;
+end;
+
+procedure CambiaTarifaVentas(id_s: integer; Tarifa, Tarifa_old: string);
+var
+  Error : boolean;
+begin
+  with DameQueryRO(nil, DMMain.DB) do
+  begin
+     try
+        SQL.Text := 'SELECT ERROR FROM UT_REFRESCA_DETALLE_S_TARIFA(:ID_S, :TARIFA, :ENTRADA)';
+        ParamByName('ID_S').AsInteger := id_s;
+        ParamByName('TARIFA').AsString := Tarifa;
+        ParamByName('ENTRADA').AsInteger := Entorno.Entrada;
+        Open;
+        Error := FieldByName('ERROR').AsInteger = 1;
+     finally
+        Free;
+     end;
+  end;
+
+  if Error then
+  begin
+     with DameQueryRO(nil, DMMain.DB) do
+     begin
+        try
+           SQL.Text := 'UPDATE GES_CABECERAS_S SET TARIFA = :TARIFA WHERE ID_S = :ID_S';
+           ParamByName('TARIFA').AsString := Tarifa_old;
+           ParamByName('ID_S').AsInteger := id_s;
+           Open;
+           MuestraMensaje('Cambiar Tarifa',_('No se puede cambiar la tarifa, el documento es origen o destino de otro.'),'','Aceptar',0);
+        finally
+           Free;
+        end;
+     end;
+  end;
+end;
+
+function HayCambioIVATarifa(Tarifa_new, Tarifa_old: string): boolean;
+begin
+  Result := (DMMain.TarifaEsIvaIncluido(Tarifa_old) <> DMMain.TarifaEsIvaIncluido(Tarifa_new));
+end;
+
+function IsURL404(const URL: string): boolean;
+var
+  HTTP : TIdHTTP;
+begin
+  HTTP := TIdHTTP.Create(nil);
+  try
+     try
+        // Realiza una solicitud HEAD a la URL
+        HTTP.Head(URL);
+        Result := HTTP.ResponseCode = 404;
+     except
+        on E: EIdHTTPProtocolException do
+           Result := (E.ErrorCode = 404); // Captura el error 404 específicamente
+        else
+           Result := False; // Otros errores pueden no ser 404
+     end;
+  finally
+     HTTP.Free;
+  end;
+end;
+
+
+procedure Graba(DataSet: TDataSet);
+begin
+  DataSet.Refresh;
+end;
+
+end.

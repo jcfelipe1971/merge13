@@ -87,7 +87,7 @@ begin
   LEntrada.Caption := Entorno.Entrada.ToString;
   LIP.Caption := DameIPLocal;
  // LIPPublica.Caption := DameIPPublica;
-  LTMACServidor.Caption := DameMACLocal ;//+ ' (' + DMMain.IP_Servidor + ')';
+//  LTMACServidor.Caption := DameMACLocal ;//+ ' (' + DMMain.IP_Servidor + ')';
   DMMain.DameActualizaciones(SGActualizaciones);
   DMMain.DatosVersion(VersionBaseDeDatos, Empresa, Copyright, NombreProducto, True);
   LVersionBD.Caption := VersionBaseDeDatos;
