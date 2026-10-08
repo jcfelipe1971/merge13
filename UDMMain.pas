@@ -36,6 +36,14 @@ type
 
   TMonedaInfList = array of TMonedaInf;
 
+  // Parámetro de FiltraSQL (de Merge)
+  TParametroFiltrado = class(TObject)
+  public
+    Filtro: string;
+    SQLBase: TStrings;
+    Tabla: TFDQuery;
+  end;
+
 type
   TDMMain = class(TDataModule)
     TLocal: TFDTransaction;
@@ -146,6 +154,15 @@ type
     FicheroVersion: string;
     UltimaUnidad: string;
     UltimoDecimales: integer;
+    // Títulos que Merge cargaba en TDMMain (se cargan la primera vez que se piden)
+    FTituloSituacionProduccion: TStringList;
+    FTituloUnidadMedida: TStringList;
+    FTituloPeriodoFacturacion: TStringList;
+    FEmpresaPeriodos: integer;
+    function CargaTitulos(var Lista: TStringList; const aSQL: string): TStringList;
+    function GetTituloSituacionProduccion(Situacion: integer): string;
+    function GetTituloUnidadMedida: TStrings;
+    function GetTituloPeriodoFacturacion: TStrings;
   public
     { Public declarations }
     procedure Conectar;
@@ -285,6 +302,16 @@ type
   public
     // En Merge la conexión se llama DataBase; DB se mantiene para el código que viene de MaxFactu
     property DB: TFDConnection read DataBase;
+    // ---- De TDMMain de Merge ----
+    destructor Destroy; override;
+    procedure FiltraSQL(Parametro: TParametroFiltrado; Abrir: boolean = True);
+    procedure RecargaTitulos;
+    procedure AbrirArchivo(Archivo: string);
+    function DameDirectorioComunicaciones(Tipo: string): string;
+    function DameDirectorioCodCliPro(Tipo: string; CodCliPro: integer): string;
+    property TituloSituacionProduccion[Situacion: integer]: string read GetTituloSituacionProduccion;
+    property TituloUnidadMedida: TStrings read GetTituloUnidadMedida;
+    property TituloPeriodoFacturacion: TStrings read GetTituloPeriodoFacturacion;
   end;
 
 var
@@ -593,6 +620,7 @@ begin
   EstadoKri_Estado := TStringList.Create;
   UltimaUnidad := '';
   UltimoDecimales := 0;
+  FEmpresaPeriodos := -1;
   TSLNiveles := TStringList.Create;
   // IP_Servidor := Copy(DB.Params.Database, 1, Pos(':', DB.Params.Database) - 1);
 end;
@@ -4474,6 +4502,163 @@ begin
       end;
     end;
   end;
+end;
+
+{ ---------------------------------------------------------------------------------------------- }
+{ De TDMMain de Merge                                                                            }
+{ ---------------------------------------------------------------------------------------------- }
+
+destructor TDMMain.Destroy;
+begin
+  RecargaTitulos;
+  inherited;
+end;
+
+function TDMMain.CargaTitulos(var Lista: TStringList; const aSQL: string): TStringList;
+begin
+  if Lista = nil then
+  begin
+    Lista := TStringList.Create;
+    with DameQueryRO(nil, DB) do
+    begin
+      try
+        SQL.Text := aSQL;
+        Open;
+        while not Eof do
+        begin
+          Lista.Values[Fields[0].AsString] := Fields[1].AsString;
+          Next;
+        end;
+      finally
+        Free;
+      end;
+    end;
+  end;
+  Result := Lista;
+end;
+
+function TDMMain.GetTituloSituacionProduccion(Situacion: integer): string;
+begin
+  Result := CargaTitulos(FTituloSituacionProduccion, 'SELECT ESTADO, TITULO FROM PRO_SYS_ESTADO ORDER BY ESTADO')
+    .Values[IntToStr(Situacion)];
+  if Result = '' then
+    Result := '-';
+end;
+
+function TDMMain.GetTituloUnidadMedida: TStrings;
+begin
+  Result := CargaTitulos(FTituloUnidadMedida, 'SELECT TIPO, TITULO FROM SYS_UNIDADES_ARTICULOS ORDER BY TIPO');
+end;
+
+function TDMMain.GetTituloPeriodoFacturacion: TStrings;
+begin
+  if FEmpresaPeriodos <> Entorno.Empresa then
+  begin
+    FreeAndNil(FTituloPeriodoFacturacion);
+    FEmpresaPeriodos := Entorno.Empresa;
+  end;
+  Result := CargaTitulos(FTituloPeriodoFacturacion,
+    'SELECT PERIODO, TITULO FROM EMP_PERIODOS_FACTURACION WHERE EMPRESA = ' + IntToStr(Entorno.Empresa) +
+    ' ORDER BY PERIODO');
+end;
+
+procedure TDMMain.RecargaTitulos;
+begin
+  FreeAndNil(FTituloSituacionProduccion);
+  FreeAndNil(FTituloUnidadMedida);
+  FreeAndNil(FTituloPeriodoFacturacion);
+  FEmpresaPeriodos := -1;
+end;
+
+procedure TDMMain.FiltraSQL(Parametro: TParametroFiltrado; Abrir: boolean = True);
+var
+  Orden, Filtro, Nombre: string;
+  i: integer;
+  Q: TFDQuery;
+begin
+  if Length(Parametro.Filtro) = 0 then
+    Exit;
+  Q := Parametro.Tabla;
+  Q.DisableControls;
+  try
+    Q.Close;
+    Q.SQL.Clear;
+    Q.SQL.AddStrings(Parametro.SQLBase);
+    Orden := OrdenadoPor(Q);
+    Ordenar(Q, '');
+    Q.SQL.Add(' AND (' + Parametro.Filtro + ')');
+    Ordenar(Q, Orden);
+    Filtro := '000000';
+    for i := 0 to Q.Params.Count - 1 do
+    begin
+      Nombre := UpperCase(Q.Params[i].Name);
+      if Nombre = 'EMPRESA' then
+        Filtro[1] := '1'
+      else if Nombre = 'EJERCICIO' then
+        Filtro[2] := '1'
+      else if Nombre = 'CANAL' then
+        Filtro[3] := '1'
+      else if Nombre = 'SERIE' then
+        Filtro[4] := '1'
+      else if Nombre = 'PAIS' then
+        Filtro[5] := '1'
+      else if Nombre = 'PGC' then
+        Filtro[6] := '1';
+    end;
+    FiltraTabla(Q, Filtro, Abrir);
+  finally
+    Q.EnableControls;
+  end;
+end;
+
+procedure TDMMain.AbrirArchivo(Archivo: string);
+const
+  // de Winapi.Windows (no está en los uses de esta unit)
+  SW_SHOW = 5;
+  ERROR_BAD_FORMAT = 11;
+var
+  Resultado: NativeInt;
+begin
+  Resultado := ShellExecute(Application.Handle, nil, PChar(Archivo), nil, nil, SW_SHOW);
+  if Resultado <= 32 then
+    case Resultado of
+      0: ShowMessage(_('El sistema operativo no tiene memoria o recursos suficientes.'));
+      ERROR_BAD_FORMAT: ShowMessage(_('El archivo EXE es inválido.'));
+      SE_ERR_ACCESSDENIED: ShowMessage(_('El sistema operativo denegó el acceso al archivo especificado.'));
+      SE_ERR_ASSOCINCOMPLETE: ShowMessage(_('El archivo asociado es incompatible o inválido.'));
+      SE_ERR_DLLNOTFOUND: ShowMessage(_('La librería dinámica especificada no se ha encontrado.'));
+      SE_ERR_FNF: ShowMessage(_('El archivo no ha sido encontrado.'));
+      SE_ERR_NOASSOC: ShowMessage(_('No hay ninguna aplicación asociada con la extensión del archivo.'));
+      SE_ERR_OOM: ShowMessage(_('No ha habido memoria suficiente para completar la operación.'));
+      SE_ERR_PNF: ShowMessage(_('No se ha encontrado la carpeta especificada.'));
+      SE_ERR_SHARE: ShowMessage(_('Error de permisos.'));
+    else
+      ShowMessage(Format(_('No se ha podido abrir el archivo (código %d).'), [Resultado]));
+    end;
+end;
+
+function AseguraDir(const Dir: string): string;
+begin
+  Result := ExcludeTrailingPathDelimiter(Dir);
+  if not DirectoryExists(Result) then
+    ForceDirectories(Result);
+end;
+
+function TDMMain.DameDirectorioComunicaciones(Tipo: string): string;
+begin
+  Result := AseguraDir(Entorno.DirectorioComunicaciones);
+  Result := AseguraDir(Result + '\' + Ajusta(IntToStr(Entorno.Empresa), 'I', 3, '0'));
+  Result := AseguraDir(Result + '\' + Tipo) + '\';
+end;
+
+function TDMMain.DameDirectorioCodCliPro(Tipo: string; CodCliPro: integer): string;
+begin
+  Result := ExcludeTrailingPathDelimiter(DameDirectorioComunicaciones(Tipo));
+  // 226 - Directorio = DirBase\Emp\Tipo\CodCliPro en 5 dígitos
+  if EstadoKri(226) = 1 then
+    Result := AseguraDir(Result + '\' + Ajusta(IntToStr(CodCliPro), 'I', 5, '0')) + '\'
+  else
+    Result := AseguraDir(Result + '\' + IntToStr(CodCliPro)) + '\';
 end;
 
 end.

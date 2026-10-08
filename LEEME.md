@@ -23,7 +23,10 @@ Se puede importar el mismo módulo las veces que haga falta: se regenera sin dup
   guardados en el DFM, tipos de campo reales).
 - Código: reglas de conversión (ExecQuery, ByName, AutoTrans, FormatSettings, parámetros `?X`...).
 - Lo deja en `Merge\<carpeta de Merge>\`, las dependencias sin importar en `Pendientes\` (interfaz real, cuerpo
-  vacío), `UUtilesMerge` y utilidades en `Conversion\`, registra la acción del menú y actualiza `Merge13.dpr`.
+  vacío), las rutinas de `UUtiles` de Merge que hagan falta en la `UUtiles` de Merge13 (entre marcas
+  `{MERGE2M13-UUTILES-...}`), registra la acción del menú y actualiza `Merge13.dpr`.
+- No crea units propias: lo que en Merge estaba en TDMMain/REntorno/TFIBTableSet está en `UDMMain`, `UEntorno` y
+  `UUtiles` de Merge13 (`TControlConcurrencia` en `UUtiles`, `TBuscadorCampo` en `UFMBuscar`).
 - Informe en `Conversion\informes\informe_<módulo>.txt`.
 
 ## Listados
@@ -38,7 +41,6 @@ Se puede importar el mismo módulo las veces que haga falta: se regenera sin dup
 - `equivalencias.txt`: nombres de Merge -> Merge13 (`Entorno.Usuario => Entorno.IdUsuario`...).
 - `m13_pendientes.txt`: units que se dejan en Pendientes aunque no tengan formulario (p.ej. `UImagenes`).
 - `units_componentes_merge.txt`: units de componentes de Merge que desaparecen de los `uses`.
-- `framework\`: `UBuscadorCampo`, `UControlConcurrencia`, `UAuxMerge` (se copian a `Conversion\`).
 - Código del importador: `UFMImportador` (ventana), `UImpConversor` (motor), `UImpReglas` (reglas y RTTI),
   `UImpDfm` (DFM), `UImpTexto` (texto), `UImpFR` (listados).
 

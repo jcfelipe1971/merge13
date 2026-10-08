@@ -73,8 +73,11 @@ type
     FFamSistema: string;
     FFamDefecto: string;
     FPGC : integer;
+    FNivel: integer;
+    FNivelIdUsuario: integer;
 
     procedure InicializaEntorno;
+    function GetNivel: integer;
     procedure SetServidorVersion(Valor: string);
     procedure SetServidorLicencias(Valor: string);
     procedure SetVirtualHost(Valor: string);
@@ -174,7 +177,18 @@ type
     DigitosSub: smallint;
     AlmacenDefecto :string;
     Memorizar_Fecha: boolean;
+    // Datos de REntorno de Merge
+    DatosAbiertos: boolean;
+    Delegacion: string;
+    SerieRestringida: string;
+    ColorEnlaceActivo: integer;
+    ColorCampoID: integer;
+    ColorEdtFnd: integer;
+    DirectorioComunicaciones: string; // directorio para cartas a cli/pro/...
     procedure AjustaFormatoFechaHora;
+    // Nivel de acceso del usuario conectado (en Merge lo cargaba LOG_ENTRADAS_VALIDA_SA al entrar)
+    property Nivel: integer Read GetNivel;
+    property Restriccion: integer Read GetNivel;
 
   end;
 
@@ -307,6 +321,39 @@ begin
 
   VersionMaxFactu      := GetFileVersion(ParamStr(0)) ;
   FechaVersionMaxFactu := '2026-05-09';
+
+  // Datos de REntorno de Merge (mismos valores por defecto y misma sección [Datos] del INI)
+  DatosAbiertos := FIniFile.ReadBool('Datos', 'DatosAbiertos', True);
+  DirectorioComunicaciones := IncludeTrailingPathDelimiter(FIniFile.ReadString('Datos', 'DirectorioComunicaciones',
+    RutaEXE + 'Comunicaciones\'));
+  Delegacion := '';
+  SerieRestringida := '';
+  ColorEnlaceActivo := $00FF0000; // azul
+  ColorCampoID := $00C0FFFF; // amarillo claro
+  ColorEdtFnd := $00FFF0E0;
+  FNivel := -1;
+  FNivelIdUsuario := -1;
+end;
+
+function TEntorno.GetNivel: integer;
+begin
+  // Se lee de SYS_USUARIOS la primera vez (y si cambia el usuario conectado)
+  if (FNivel < 0) or (FNivelIdUsuario <> FIdUsuario) then
+  begin
+    with DameQueryRO(nil, DMMain.DB) do
+    begin
+      try
+        SQL.Text := 'SELECT NIVEL FROM SYS_USUARIOS WHERE USUARIO = :USUARIO';
+        ParamByName('USUARIO').AsInteger := FIdUsuario;
+        Open;
+        FNivel := Fields[0].AsInteger;
+        FNivelIdUsuario := FIdUsuario;
+      finally
+        Free;
+      end;
+    end;
+  end;
+  Result := FNivel;
 end;
 
 procedure TEntorno.SetVirtualHost(Valor: string);

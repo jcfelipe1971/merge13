@@ -84,10 +84,9 @@ type
     // --- dependencias
     function GeneraStub(const Src, Nombre: string): string;
     procedure GeneraTiposPendientes;
-    procedure GeneraUUtilesMerge;
+    procedure ActualizaUUtiles;
     procedure ResuelveDependencias(Importadas: TStringList);
     procedure ActualizaDpr;
-    procedure CopiaFramework;
   public
     constructor Create(const DirMerge, DirProyecto: string; Conexion: TFDConnection; ALog: TImpLog;
       SinTeeChart: Boolean = True);
@@ -121,6 +120,23 @@ begin
   Result := '';
   if M.Success and (M.Groups.Count > N) and M.Groups[N].Success then
     Result := M.Groups[N].Value;
+end;
+
+function UsesMerge13(const Src: string): TArray<string>;
+// Units de Merge13 donde está lo que el código convertido usa de Merge (TDMMain, REntorno, TFIBTableSet, Log)
+var
+  T: string;
+begin
+  T := QuitaComentarios(Src);
+  Result := [];
+  if TRegEx.IsMatch(T, '\bDMMain\b', [roIgnoreCase]) then
+    Result := Result + ['UDMMain'];
+  if TRegEx.IsMatch(T, '\b(R?Entorno|FiltroEntorno|LeeDatoIni|EscribeDatoIni)\b', [roIgnoreCase]) then
+    Result := Result + ['UEntorno'];
+  if TRegEx.IsMatch(T, '(?<![\w.])(Ordenar|OrdenadoPor|DameFiltroSelect|TControlConcurrencia)\b', [roIgnoreCase]) then
+    Result := Result + ['UUtiles'];
+  if TRegEx.IsMatch(T, '(?<![\w.])Log\s*\(', [roIgnoreCase]) then
+    Result := Result + ['ULog'];
 end;
 
 function AntesDeAlmohadilla(const L: string): string;
@@ -1170,10 +1186,11 @@ begin
     Dest := FEquivalencias.ValueFromIndex[FEquivalencias.IndexOf(Eq)];
     S := EnCodigo(S, '(?<![\w])' + TRegEx.Escape(Orig) + '(?!\w)', Dest);
   end;
-  // funciones de Merge que en Merge13 están en UAuxMerge
-  S := SinComentarios(S, '\bDMMain\.(TituloEstado|TituloSituacionProduccion)\s*\[([^\]\[]+)\]', '$1($2)');
-  S := EnCodigo(S, '\bDMMain\.(TituloEstado|TituloSituacionProduccion|TituloUnidadMedida|TituloPeriodoFacturacion|' +
-    'FiltraRO|FiltraSQL|MinTercero|AbrirArchivo|DameDirectorioComunicaciones|DameDirectorioCodCliPro)\b', '$1');
+  // TDMMain de Merge: lo que Merge13 ya tiene con otro nombre (el resto sigue en DMMain)
+  S := SinComentarios(S, '\bDMMain\.TituloEstado\s*\[([^\]\[]+)\]', 'DMMain.DameTituloEstado($1)');
+  S := EnCodigo(S, '\bDMMain\.FiltraRO\b', 'DMMain.FiltraTabla');
+  if TRegEx.IsMatch(QuitaComentarios(S), '\bDMMain\.MinTercero\b', [roIgnoreCase]) then
+    Revisar(Nombre + ': DMMain.MinTercero no existe en Merge13 (no se crea); falta decidir a qué rutina existente se llama.');
   S := EnCodigo(S, '\bEntorno\.(Empresa|Ejercicio|Canal|Entrada)Str\b', 'IntToStr(Entorno.$1)');
   S := SinComentarios(S, '\b([\w.]+)\.Ordenar\s*\(', 'Ordenar($1, ');
   S := EnCodigo(S, '\b([\w.]+)\.OrdenadoPor\b', 'OrdenadoPor($1)');
@@ -1187,6 +1204,9 @@ begin
   S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*(?<![\w.])(?:Campo|ControlEdit)\s*:=[^\n]*;)', '$1// $2  // [G2K]', [roIgnoreCase, roMultiLine]);
   S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\.(?:Insercion|UsaDicG2K|AutoCambiarColumna|AutoPostEnCheckBox|AutoStartDrag|' +
     'CampoNum|CampoStr|Campos_Desplegar)\s*:=[^\n]*;)', '$1// $2  // [propiedad de EditFind/GridFind]', [roIgnoreCase, roMultiLine]);
+  // TControlEdit y TPopUpTeclas de Merge están obsoletos: no se importan ni tienen equivalente
+  S := TRegEx.Replace(S, '^([ \t]*)([^/\n]*\b(?:TControlEdit|TPopUpTeclas)\b[^\n]*?)(\r?)$', '$1// $2  // [obsoleto, no se importa]$3',
+    [roIgnoreCase, roMultiLine]);
   S := ReglasUses(S, Nombre);
   S := QuitaUnitsNoUsadas(S);
   // quien traduce (TranslateComponent / _()) necesita gnugettext en la interfaz
@@ -1194,10 +1214,6 @@ begin
     not TRegEx.IsMatch(QuitaComentarios(S), '\buses\b[^;]*\bgnugettext\b', [roIgnoreCase]) then
     S := AnyadeUses(S, 'interface', ['gnugettext']);
   S := ReglasUses(S, Nombre);   // vuelve a escribir los uses con el formato de gnugettext
-  // las rutinas de UUtiles de Merge que Merge13 no tiene están en UUtilesMerge
-  if not SameText(Nombre, 'UUtilesMerge.pas') and TRegEx.IsMatch(QuitaComentarios(S), '\buses\b[^;]*\bUUtiles\b', [roIgnoreCase]) then
-    S := AnyadeUses(S, IfThen(TRegEx.IsMatch(QuitaComentarios(TRegEx.Split(S, '\bimplementation\b', [roIgnoreCase])[0]),
-      '\buses\b[^;]*\bUUtiles\b', [roIgnoreCase]), 'interface', 'implementation'), ['UUtilesMerge']);
   Result := S;
 end;
 
@@ -1205,7 +1221,8 @@ function TImportador.ConviertePasUnit(const Src, Nombre: string): string;
 begin
   Result := ConversionesComunes(Src, Nombre);
   Result := AnyadeUses(Result, 'implementation', ['Data.DB', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Param',
-    'FireDAC.Comp.Client', 'FireDAC.DApt', 'UAuxMerge']);
+    'FireDAC.Comp.Client', 'FireDAC.DApt']);
+  Result := AnyadeUses(Result, 'implementation', UsesMerge13(Result));
   Result := CompletaUsesInterfaz(Result);
   Result := MarcaIdioma(QuitaDuplicadosUses(Result));
 end;
@@ -1235,13 +1252,13 @@ begin
     M := TRegEx.Match(S, 'procedure\s+T\w+\.\w*Create\s*\(\s*Sender\s*:\s*TObject\s*\)\s*;.*?\bbegin\b', [roIgnoreCase, roSingleLine]);
     if M.Success then
       S := Copy(S, 1, M.Index + M.Length - 1) + Bloque + Copy(S, M.Index + M.Length, MaxInt);
-    S := AnyadeUses(S, 'implementation', ['UControlConcurrencia']);
+    S := AnyadeUses(S, 'implementation', ['UUtiles']);   // TControlConcurrencia
   end;
   S := AnyadeUses(S, 'interface', TArray<string>.Create('System.SysUtils', 'System.Classes', 'System.Variants', 'Data.DB',
     'Vcl.Forms', 'Vcl.Controls', 'Vcl.Dialogs', 'Winapi.Windows', 'FireDAC.Stan.Intf', 'FireDAC.Stan.Option',
     'FireDAC.Stan.Param', 'FireDAC.Stan.Error', 'FireDAC.DatS', 'FireDAC.Phys.Intf', 'FireDAC.DApt.Intf', 'FireDAC.DApt',
     'FireDAC.Comp.Client'));
-  S := AnyadeUses(S, 'implementation', ['UAuxMerge']);
+  S := AnyadeUses(S, 'implementation', UsesMerge13(S));
   S := CompletaUsesInterfaz(S);
   Result := MarcaIdioma(QuitaDuplicadosUses(S));
 end;
@@ -1419,8 +1436,10 @@ begin
       S := TRegEx.Replace(TrimRight(S), '\bend\.\s*$', 'initialization' + #13#10 + L + #13#10 + 'end.' + #13#10);
     S := AnyadeUses(S, 'implementation', ['UModulos']);
   end;
-  S := AnyadeUses(S, 'interface', ['UBuscadorCampo', 'UAuxMerge']);
+  if FBuscadores.Count > 0 then
+    S := AnyadeUses(S, 'interface', ['UFMBuscar']);   // TBuscadorCampo
   S := AnyadeUses(S, 'implementation', ['UFormGest']);
+  S := AnyadeUses(S, 'implementation', UsesMerge13(S));
   S := CompletaUsesInterfaz(S);
   Result := MarcaIdioma(QuitaDuplicadosUses(S));
 end;
@@ -1428,7 +1447,7 @@ end;
 { ------------------------------------------------------------------------------------------------ dependencias }
 
 const
-  TIPOS_PENDIENTES_RE = '\b(Tfr(?!x)[A-Z]\w*|TfrxHY\w*|THYReport\w*|TControlEdit|TPopUpTeclas|THYMEditPanel|TG2KTBLoc|' +
+  TIPOS_PENDIENTES_RE = '\b(Tfr(?!x)[A-Z]\w*|TfrxHY\w*|THYReport\w*|THYMEditPanel|TG2KTBLoc|' +
     'TLFFibFormStorage|TFormStorage|TFormPlacement|TEntornoFind2000|TTeclas|TLFManager|TCodeBar|TYearPlanner|TIOFFind|' +
     'TLetra|TGantt|TRxClock|TCVBNorma\w*|TConfirming|THYPrinterOptions|TRxMemoryData|THYIBBackup|TFRTallas_\w+)\b';
   TIPOS_TEECHART_RE = '\b(TDBChart|TChart|T\w+Series)\b';
@@ -1623,23 +1642,41 @@ begin
   end;
 end;
 
-procedure TImportador.GeneraUUtilesMerge;
-// Rutinas de UUtiles de Merge que Merge13 no tiene y que usa lo importado (con su código real y dependencias)
+const
+  UUTILES_INICIO = '{MERGE2M13-UUTILES-INICIO}';
+  UUTILES_FIN = '{MERGE2M13-UUTILES-FIN}';
+  UUTILES_BLOQUE_RE = '[ \t]*\{MERGE2M13-UUTILES-INICIO\}.*?\{MERGE2M13-UUTILES-FIN\}[^\n]*\n?(?:\r?\n)?';
+  USES_CLAUSULA_RE = '^(?:\s|\{[^}]*\})*(?:uses\b(?:[^;{]|\{[^}]*\})*;)?';
+
+procedure TImportador.ActualizaUUtiles;
+// Rutinas de UUtiles de Merge que Merge13 no tiene y que usa lo importado (con su código real y dependencias).
+// Se escriben en la UUtiles de Merge13 entre las marcas {MERGE2M13-UUTILES-...}; en cada importación se regeneran.
 var
-  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab: string;
+  SrcMerge, IfaceMerge, ImplMerge, F, Texto, Nombre, Cab, RutaUUtiles, Original, Nuevo: string;
   EnM13, Usadas, Palabras, Pend: TStringList;
   Decl, Bloques: TDictionary<string, TList<string>>;
-  M: TMatch;
+  M, Corte: TMatch;
   Partes: TArray<string>;
   Pos_: TList<Integer>;
   i, FinB: Integer;
   Iface, Impl: TStringBuilder;
-  UsesIface, UsesImpl: string;
+  UsesIface, UsesImpl, Decls, Cuerpos: string;
   Orden: TStringList;
+  function SinUUtiles(const Units: TArray<string>): TArray<string>;
+  begin
+    Result := [];
+    for var U in Units do
+      if (U <> '') and not SameText(U, 'UUtiles') then
+        Result := Result + [U];
+  end;
 begin
   F := RutaMerge('UUtiles');
-  if F = '' then
+  RutaUUtiles := TPath.Combine(FProyecto, 'UUtiles.pas');
+  if (F = '') or not FileExists(RutaUUtiles) then
     Exit;
+  Original := LeeTexto(RutaUUtiles);
+  // lo que generó la importación anterior se quita y se vuelve a calcular
+  Nuevo := TRegEx.Replace(Original, UUTILES_BLOQUE_RE, '', [roSingleLine]);
   SrcMerge := LeeTexto(F);
   Partes := TRegEx.Split(SrcMerge, '\bimplementation\b', [roIgnoreCase]);
   IfaceMerge := Partes[0];
@@ -1659,12 +1696,16 @@ begin
   Iface := TStringBuilder.Create;
   Impl := TStringBuilder.Create;
   try
-    // rutinas que ya existen en Merge13 (interfaces de sus units, fuera de clases)
+    // rutinas que ya existen en Merge13 (interfaces de sus units, fuera de clases; el importador no cuenta)
     for F in TDirectory.GetFiles(FProyecto, '*.pas', TSearchOption.soAllDirectories) do
     begin
-      if ContainsText(F, '_dcu') or SameText(TPath.GetFileName(F), 'UUtilesMerge.pas') then
+      if ContainsText(F, '_dcu') or ContainsText(F, '\Importador\') or ContainsText(F, '\__history\') then
         Continue;
-      Texto := QuitaComentarios(TRegEx.Split(LeeTexto(F), '\bimplementation\b', [roIgnoreCase])[0]);
+      if SameText(F, RutaUUtiles) then
+        Texto := Nuevo
+      else
+        Texto := LeeTexto(F);
+      Texto := QuitaComentarios(TRegEx.Split(Texto, '\bimplementation\b', [roIgnoreCase])[0]);
       Texto := TRegEx.Replace(Texto, '\bclass\b.*?\n\s*end\s*;', '', [roIgnoreCase, roSingleLine]);
       for M in TRegEx.Matches(Texto, '^\s*(?:function|procedure)\s+(\w+)', [roIgnoreCase, roMultiLine]) do
         EnM13.Add(LowerCase(M.Groups[1].Value));
@@ -1702,9 +1743,10 @@ begin
       Bloques[Nombre].Add(TrimRight(Texto) + #13#10#13#10);
     end;
     // palabras usadas por lo importado
-    for F in TDirectory.GetFiles(TPath.Combine(FProyecto, 'Merge'), '*.pas', TSearchOption.soAllDirectories) do
-      for M in TRegEx.Matches(QuitaComentarios(LeeTexto(F)), '\b\w+\b') do
-        Palabras.Add(LowerCase(M.Value));
+    if DirectoryExists(TPath.Combine(FProyecto, 'Merge')) then
+      for F in TDirectory.GetFiles(TPath.Combine(FProyecto, 'Merge'), '*.pas', TSearchOption.soAllDirectories) do
+        for M in TRegEx.Matches(QuitaComentarios(LeeTexto(F)), '\b\w+\b') do
+          Palabras.Add(LowerCase(M.Value));
     if DirectoryExists(TPath.Combine(FProyecto, 'Pendientes')) then
       for F in TDirectory.GetFiles(TPath.Combine(FProyecto, 'Pendientes'), '*.pas') do
         for M in TRegEx.Matches(QuitaComentarios(LeeTexto(F)), '\b\w+\b') do
@@ -1726,36 +1768,61 @@ begin
             (EnM13.IndexOf(LowerCase(M.Value)) < 0) then
             Pend.Add(LowerCase(M.Value));
     end;
-    M := TRegEx.Match(IfaceMerge, '^\s*uses\b.*?;', [roIgnoreCase, roSingleLine, roMultiLine]);
-    UsesIface := IfThen(M.Success, Trim(M.Value), '');
-    M := TRegEx.Match(ImplMerge, '^\s*uses\b(.*?);', [roIgnoreCase, roSingleLine, roMultiLine]);
-    UsesImpl := 'uses' + IfThen(Grupo(M, 1) <> '', Grupo(M, 1) + ',', '') + ' UUtiles, UEntorno, UDMMain;';
-    Iface.Append('unit UUtilesMerge;' + #13#10#13#10 +
-      '// Rutinas de UUtiles de Merge que Merge13 no tiene (código original importado).' + #13#10 +
-      '// Las genera el importador: solo las que usa lo importado y sus dependencias.' + #13#10#13#10 +
-      'interface' + #13#10#13#10 + UsesIface + #13#10#13#10);
-    for Nombre in Orden do
-      if Usadas.IndexOf(Nombre) >= 0 then
-      begin
-        if Decl.ContainsKey(Nombre) then
-          for Cab in Decl[Nombre] do
-            Iface.Append(Cab + #13#10)
-        else
+    if Usadas.Count > 0 then
+    begin
+      M := TRegEx.Match(IfaceMerge, '^\s*uses\b.*?;', [roIgnoreCase, roSingleLine, roMultiLine]);
+      UsesIface := IfThen(M.Success, Trim(M.Value), '');
+      M := TRegEx.Match(ImplMerge, '^\s*uses\b(.*?);', [roIgnoreCase, roSingleLine, roMultiLine]);
+      UsesImpl := IfThen(Grupo(M, 1) <> '', 'uses' + Grupo(M, 1) + ';', '');
+      for Nombre in Orden do
+        if Usadas.IndexOf(Nombre) >= 0 then
+        begin
+          if Decl.ContainsKey(Nombre) then
+            for Cab in Decl[Nombre] do
+              Iface.Append(Cab + #13#10)
+          else
+            for Texto in Bloques[Nombre] do
+            begin
+              M := TRegEx.Match(Texto, '^((?:procedure|function)\s+\w+\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;)', [roIgnoreCase]);
+              if M.Success then
+                Iface.Append(M.Value + IfThen(Bloques[Nombre].Count > 1, ' overload;') + #13#10);
+            end;
           for Texto in Bloques[Nombre] do
-          begin
-            M := TRegEx.Match(Texto, '^((?:procedure|function)\s+\w+\s*(?:\([^)]*\))?\s*(?::\s*[\w.<>]+)?\s*;)', [roIgnoreCase]);
-            if M.Success then
-              Iface.Append(M.Value + IfThen(Bloques[Nombre].Count > 1, ' overload;') + #13#10);
-          end;
-        for Texto in Bloques[Nombre] do
-          Impl.Append(Texto);
-      end;
-    Texto := Iface.ToString + #13#10 + 'implementation' + #13#10#13#10 + UsesImpl + #13#10#13#10 + Impl.ToString + 'end.' + #13#10;
-    Texto := ConviertePasUnit(Texto, 'UUtilesMerge.pas');
-    Texto := QuitaSobrecargasDuplicadas(Texto);
-    ForceDirectories(TPath.Combine(FProyecto, 'Conversion'));
-    GuardaTexto(TPath.Combine(FProyecto, 'Conversion\UUtilesMerge.pas'), Texto);
-    Log(Format('UUtilesMerge: %d rutinas de UUtiles de Merge', [Usadas.Count]));
+            Impl.Append(Texto);
+        end;
+      // se convierte como una unit aparte y se reparte en la UUtiles de Merge13 (declaraciones, código y uses)
+      Texto := 'unit UUtiles;' + #13#10#13#10 + 'interface' + #13#10#13#10 + UsesIface + #13#10#13#10 + Iface.ToString + #13#10 +
+        'implementation' + #13#10#13#10 + UsesImpl + #13#10#13#10 + Impl.ToString + 'end.' + #13#10;
+      Texto := ConversionesComunes(Texto, 'UUtiles.pas');
+      Texto := CompletaUsesInterfaz(Texto);
+      Texto := QuitaSobrecargasDuplicadas(Texto);
+      Corte := TRegEx.Match(Texto, '\bimplementation\b', [roIgnoreCase]);
+      Decls := Copy(Texto, 1, Corte.Index - 1);
+      Cuerpos := Copy(Texto, Corte.Index + Length('implementation'), MaxInt);
+      Decls := TRegEx.Replace(Decls, '^\s*unit\s+\w+\s*;\s*interface\b', '', [roIgnoreCase]);
+      Decls := Trim(TRegEx.Replace(Decls, USES_CLAUSULA_RE, '', [roIgnoreCase]));
+      Cuerpos := TRegEx.Replace(Cuerpos, USES_CLAUSULA_RE, '', [roIgnoreCase]);
+      Cuerpos := Trim(TRegEx.Replace(Cuerpos, '\bend\.\s*$', '', [roIgnoreCase]));
+      // declaraciones al final de la interfaz y código al final de la unit
+      M := TRegEx.Match(Nuevo, '^implementation\b', [roIgnoreCase, roMultiLine]);
+      if M.Success then
+        Nuevo := Copy(Nuevo, 1, M.Index - 1) + UUTILES_INICIO + ' // rutinas de UUtiles de Merge (las regenera el importador)' +
+          #13#10 + Decls + #13#10 + UUTILES_FIN + #13#10#13#10 + Copy(Nuevo, M.Index, MaxInt);
+      FinB := 0;
+      for M in TRegEx.Matches(Nuevo, '^end\.', [roIgnoreCase, roMultiLine]) do
+        FinB := M.Index;
+      if FinB > 0 then
+        Nuevo := Copy(Nuevo, 1, FinB - 1) + UUTILES_INICIO + ' // rutinas de UUtiles de Merge (las regenera el importador)' +
+          #13#10#13#10 + Cuerpos + #13#10#13#10 + UUTILES_FIN + #13#10#13#10 + Copy(Nuevo, FinB, MaxInt);
+      Nuevo := AnyadeUses(Nuevo, 'interface', SinUUtiles(UnitsDeUses(Texto, True)));
+      Nuevo := AnyadeUses(Nuevo, 'implementation', SinUUtiles(UnitsDeUses(Copy(Texto, TRegEx.Match(Texto, '\bimplementation\b',
+        [roIgnoreCase]).Index, MaxInt)) + UsesMerge13(Cuerpos)));
+    end;
+    if Nuevo <> Original then
+    begin
+      GuardaTexto(RutaUUtiles, Nuevo);
+      Log(Format('UUtiles de Merge13: %d rutinas de UUtiles de Merge', [Usadas.Count]));
+    end;
   finally
     EnM13.Free;
     Usadas.Free;
@@ -1902,18 +1969,6 @@ begin
   end;
 end;
 
-procedure TImportador.CopiaFramework;
-var
-  F, Dest: string;
-begin
-  Dest := TPath.Combine(FProyecto, 'Conversion');
-  ForceDirectories(Dest);
-  if DirectoryExists(TPath.Combine(FProyecto, 'Importador\framework')) then
-    for F in TDirectory.GetFiles(TPath.Combine(FProyecto, 'Importador\framework'), '*.pas') do
-      if not FileExists(TPath.Combine(Dest, TPath.GetFileName(F))) then
-        TFile.Copy(F, TPath.Combine(Dest, TPath.GetFileName(F)));
-end;
-
 { ------------------------------------------------------------------------------------------------ importar }
 
 procedure TImportador.ImportaModulo(const FormUnit, DMUnit: string);
@@ -1926,7 +1981,6 @@ begin
   FRevisar.Clear;
   FAuto.Clear;
   LimpiaContexto;
-  CopiaFramework;
   Importadas := TStringList.Create;
   try
     // ---- módulo de datos
@@ -2024,7 +2078,7 @@ begin
       Renombres.Free;
     end;
     ResuelveDependencias(Importadas);
-    GeneraUUtilesMerge;
+    ActualizaUUtiles;
     ActualizaDpr;
     ForceDirectories(TPath.Combine(FProyecto, 'Conversion\informes'));
     GuardaTexto(TPath.Combine(FProyecto, 'Conversion\informes\informe_' + FormUnit + '.txt'),
@@ -2044,7 +2098,6 @@ begin
   Ruta := RutaMerge(AUnit);
   if Ruta = '' then
     raise Exception.Create('No encuentro ' + AUnit);
-  CopiaFramework;
   GuardaTexto(TPath.Combine(DestinoDe(AUnit), TPath.GetFileName(Ruta)), ConviertePasUnit(LeeTexto(Ruta), AUnit + '.pas'));
   L := TStringList.Create;
   try
@@ -2053,7 +2106,7 @@ begin
   finally
     L.Free;
   end;
-  GeneraUUtilesMerge;
+  ActualizaUUtiles;
   ActualizaDpr;
   Log('Unit importada: ' + AUnit);
 end;

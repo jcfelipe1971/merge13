@@ -156,6 +156,39 @@ procedure Graba(DataSet: TDataSet);
 procedure CambiaTarifaVentas(id_s: integer; Tarifa, Tarifa_old: string);
 function HayCambioIVATarifa(Tarifa_new, Tarifa_old: string): boolean;
 
+// ---- Métodos de TFIBTableSet de Merge ----
+function OrdenadoPor(Q: TFDQuery): string;
+procedure Ordenar(Q: TFDQuery; const Campo: string);
+procedure DameFiltroSelect(Q: TFDQuery; Destino: TStrings);
+
+type
+  // Control de concurrencia para TFDQuery, equivalente al que hacía TFIBTableSet en Merge:
+  //   - cmSelectWithLock: BloqOpt=True + TablasBloqueo/CamposBloqueo -> SELECT ... WITH LOCK en tablas base
+  //   - cmUpdate: control por defecto de TFIBTableSet -> UPDATE <tabla> SET pk=pk WHERE pk=...
+  // El bloqueo se toma al entrar en edición dentro de la UpdateTransaction del dataset, y se libera
+  // con Commit en AfterPost o Rollback en AfterCancel. Los eventos que ya tuviera el dataset se respetan.
+  TModoConcurrencia = (cmSelectWithLock, cmUpdate);
+
+  TControlConcurrencia = class(TComponent)
+  private
+    FDataSet: TFDQuery;
+    FSentencias: TObjectList<TFDQuery>;
+    FBeforeEdit: TDataSetNotifyEvent;
+    FAfterPost: TDataSetNotifyEvent;
+    FAfterCancel: TDataSetNotifyEvent;
+    FIniciadaPorMi: Boolean;
+    function Transaccion: TFDCustomTransaction;
+    procedure DoBeforeEdit(DataSet: TDataSet);
+    procedure DoAfterPost(DataSet: TDataSet);
+    procedure DoAfterCancel(DataSet: TDataSet);
+    procedure Libera(Confirmar: Boolean);
+  public
+    constructor Create(ADataSet: TFDQuery); reintroduce;
+    destructor Destroy; override;
+    procedure Anyade(const Tabla, Campos: string; Modo: TModoConcurrencia);
+    class procedure Registra(ADataSet: TFDQuery; const Tabla, Campos: string;
+      Modo: TModoConcurrencia = cmSelectWithLock);
+  end;
 
 var
   LongExpansion : smallint;
@@ -166,7 +199,8 @@ uses
   System.IOUtils, Vcl.Dialogs, System.Math, Vcl.Graphics, UFMain, UFMAdjuntos,
   UFMLogin, UFMColumnas, System.Variants, FireDAC.Stan.Intf, Vcl.Themes,
   // correo
-  IdSMTP, IdMessage, IdText, IdAttachmentFile, UDMMain, System.TypInfo, Vcl.ButtonGroup,Data.Win.ADODB;
+  IdSMTP, IdMessage, IdText, IdAttachmentFile, UDMMain, System.TypInfo, Vcl.ButtonGroup,Data.Win.ADODB,
+  FireDAC.Stan.Error;
 
 const
   verhoeff_d: array [0 .. 9, 0 .. 9] of integer = ((0, 1, 2, 3, 4, 5, 6, 7, 8, 9), (1, 2, 3, 4, 0, 6, 7, 8, 9, 5),
@@ -3282,6 +3316,252 @@ end;
 procedure Graba(DataSet: TDataSet);
 begin
   DataSet.Refresh;
+end;
+
+{ ---------------------------------------------------------------------------------------------- }
+{ Métodos de TFIBTableSet de Merge                                                               }
+{ ---------------------------------------------------------------------------------------------- }
+
+function OrdenadoPor(Q: TFDQuery): string;
+var
+  i, j, p: integer;
+begin
+  Result := '';
+  for i := Q.SQL.Count - 1 downto 0 do
+  begin
+    p := Pos('ORDER BY', UpperCase(Q.SQL[i]));
+    if p > 0 then
+    begin
+      Result := Copy(Q.SQL[i], p + Length('ORDER BY'), MaxInt);
+      for j := i + 1 to Q.SQL.Count - 1 do
+        Result := Result + ' ' + Q.SQL[j];
+      Break;
+    end;
+  end;
+  Result := Trim(Result);
+end;
+
+procedure Ordenar(Q: TFDQuery; const Campo: string);
+var
+  i, j, p: integer;
+  EstabaActivo: Boolean;
+  Valores: array of Variant;
+begin
+  // Sustituye o añade el ORDER BY conservando los valores de los parámetros
+  EstabaActivo := Q.Active;
+  SetLength(Valores, Q.Params.Count);
+  for i := 0 to Q.Params.Count - 1 do
+    Valores[i] := Q.Params[i].Value;
+  if EstabaActivo then
+    Q.Close;
+  Q.SQL.BeginUpdate;
+  try
+    for i := Q.SQL.Count - 1 downto 0 do
+    begin
+      p := Pos('ORDER BY', UpperCase(Q.SQL[i]));
+      if p > 0 then
+      begin
+        for j := Q.SQL.Count - 1 downto i + 1 do
+          Q.SQL.Delete(j);
+        Q.SQL[i] := Copy(Q.SQL[i], 1, p - 1);
+        if Trim(Q.SQL[i]) = '' then
+          Q.SQL.Delete(i);
+        Break;
+      end;
+    end;
+    if Campo <> '' then
+      Q.SQL.Add('ORDER BY ' + Campo);
+  finally
+    Q.SQL.EndUpdate;
+  end;
+  for i := 0 to Q.Params.Count - 1 do
+    if i <= High(Valores) then
+      Q.Params[i].Value := Valores[i];
+  if EstabaActivo then
+    Q.Open;
+end;
+
+procedure DameFiltroSelect(Q: TFDQuery; Destino: TStrings);
+var
+  i, p: integer;
+  Linea: string;
+  Dentro: Boolean;
+begin
+  // Condiciones del WHERE sin el ORDER BY
+  Dentro := False;
+  for i := 0 to Q.SQL.Count - 1 do
+  begin
+    Linea := Q.SQL[i];
+    if not Dentro then
+    begin
+      p := Pos('WHERE', UpperCase(Linea));
+      if p = 0 then
+        Continue;
+      Dentro := True;
+      Linea := Copy(Linea, p + 5, MaxInt);
+    end;
+    p := Pos('ORDER BY', UpperCase(Linea));
+    if p > 0 then
+    begin
+      Linea := Copy(Linea, 1, p - 1);
+      if Trim(Linea) <> '' then
+        Destino.Add(Linea);
+      Break;
+    end;
+    if Trim(Linea) <> '' then
+      Destino.Add(Linea);
+  end;
+end;
+
+{ TControlConcurrencia }
+
+constructor TControlConcurrencia.Create(ADataSet: TFDQuery);
+begin
+  inherited Create(ADataSet);
+  FDataSet := ADataSet;
+  FSentencias := TObjectList<TFDQuery>.Create(True);
+  // Encadenar con los eventos que vienen del DFM
+  FBeforeEdit := ADataSet.BeforeEdit;
+  FAfterPost := ADataSet.AfterPost;
+  FAfterCancel := ADataSet.AfterCancel;
+  ADataSet.BeforeEdit := DoBeforeEdit;
+  ADataSet.AfterPost := DoAfterPost;
+  ADataSet.AfterCancel := DoAfterCancel;
+end;
+
+destructor TControlConcurrencia.Destroy;
+begin
+  FSentencias.Free;
+  inherited;
+end;
+
+class procedure TControlConcurrencia.Registra(ADataSet: TFDQuery; const Tabla, Campos: string;
+  Modo: TModoConcurrencia);
+var
+  i: integer;
+  CC: TControlConcurrencia;
+begin
+  CC := nil;
+  for i := 0 to ADataSet.ComponentCount - 1 do
+    if ADataSet.Components[i] is TControlConcurrencia then
+      CC := TControlConcurrencia(ADataSet.Components[i]);
+  if CC = nil then
+    CC := TControlConcurrencia.Create(ADataSet);
+  CC.Anyade(Tabla, Campos, Modo);
+end;
+
+procedure TControlConcurrencia.Anyade(const Tabla, Campos: string; Modo: TModoConcurrencia);
+var
+  Q: TFDQuery;
+  Lista: TStringList;
+  i: integer;
+  Where, SetPk: string;
+begin
+  if Trim(Tabla) = '' then
+    Exit;
+  Lista := TStringList.Create;
+  try
+    Lista.CommaText := StringReplace(Campos, ';', ',', [rfReplaceAll]);
+    Where := '';
+    SetPk := '';
+    for i := 0 to Lista.Count - 1 do
+      if Trim(Lista[i]) <> '' then
+      begin
+        if Where <> '' then
+        begin
+          Where := Where + ' AND ';
+          SetPk := SetPk + ', ';
+        end;
+        Where := Where + Format('%0:s = :%0:s', [Trim(Lista[i])]);
+        SetPk := SetPk + Format('%0:s = :%0:s', [Trim(Lista[i])]);
+      end;
+  finally
+    Lista.Free;
+  end;
+  Q := TFDQuery.Create(nil);
+  Q.Connection := FDataSet.Connection;
+  case Modo of
+    cmSelectWithLock:
+      Q.SQL.Text := 'SELECT * FROM ' + Tabla + ' WHERE ' + Where + ' WITH LOCK';
+    cmUpdate:
+      Q.SQL.Text := 'UPDATE ' + Tabla + ' SET ' + SetPk + ' WHERE ' + Where;
+  end;
+  Q.Tag := Ord(Modo);
+  FSentencias.Add(Q);
+end;
+
+function TControlConcurrencia.Transaccion: TFDCustomTransaction;
+begin
+  Result := FDataSet.UpdateTransaction;
+  if Result = nil then
+    Result := FDataSet.Transaction;
+end;
+
+procedure TControlConcurrencia.DoBeforeEdit(DataSet: TDataSet);
+var
+  T: TFDCustomTransaction;
+  Q: TFDQuery;
+  i: integer;
+begin
+  if Assigned(FBeforeEdit) then
+    FBeforeEdit(DataSet);
+  T := Transaccion;
+  if (T = nil) or (FSentencias.Count = 0) then
+    Exit;
+  FIniciadaPorMi := not T.Active;
+  if FIniciadaPorMi then
+    T.StartTransaction;
+  try
+    for Q in FSentencias do
+    begin
+      Q.Transaction := T;
+      for i := 0 to Q.Params.Count - 1 do
+        Q.Params[i].Value := DataSet.FieldByName(Q.Params[i].Name).Value;
+      if TModoConcurrencia(Q.Tag) = cmSelectWithLock then
+      begin
+        Q.Open;
+        Q.Close;
+      end
+      else
+        Q.ExecSQL;
+    end;
+  except
+    on E: EFDDBEngineException do
+    begin
+      if FIniciadaPorMi and T.Active then
+        T.Rollback;
+      FIniciadaPorMi := False;
+      raise EDatabaseError.Create(_('El registro está siendo modificado por otro usuario. Inténtelo más tarde.'));
+    end;
+  end;
+end;
+
+procedure TControlConcurrencia.Libera(Confirmar: Boolean);
+var
+  T: TFDCustomTransaction;
+begin
+  T := Transaccion;
+  if FIniciadaPorMi and (T <> nil) and T.Active then
+    if Confirmar then
+      T.Commit
+    else
+      T.Rollback;
+  FIniciadaPorMi := False;
+end;
+
+procedure TControlConcurrencia.DoAfterPost(DataSet: TDataSet);
+begin
+  // En Merge (TFIBTableSet.AutoCommit) el commit se hacía antes del AfterPost del usuario
+  Libera(True);
+  if Assigned(FAfterPost) then
+    FAfterPost(DataSet);
+end;
+
+procedure TControlConcurrencia.DoAfterCancel(DataSet: TDataSet);
+begin
+  Libera(False);
+  if Assigned(FAfterCancel) then
+    FAfterCancel(DataSet);
 end;
 
 end.

@@ -7,18 +7,8 @@ Entorno.IdiomaCanal => Entorno.Idioma
 Entorno.Usuario => Entorno.IdUsuario
 Entorno.UsuarioStr => Entorno.Usuario
 
-# Datos de REntorno que no existen en TEntorno de MaxFactu (están en UAuxMerge)
-Entorno.DatosAbiertos => EntornoMerge.DatosAbiertos
-Entorno.Delegacion => EntornoMerge.Delegacion
-Entorno.SerieRestringida => EntornoMerge.SerieRestringida
-Entorno.ColorEnlaceActivo => EntornoMerge.ColorEnlaceActivo
-Entorno.ColorCampoID => EntornoMerge.ColorCampoID
-Entorno.ColorEdtFnd => EntornoMerge.ColorEdtFnd
-Entorno.DirectorioComunicaciones => EntornoMerge.DirectorioComunicaciones
-
-# Nivel de acceso del usuario (en Merge lo cargaba LOG_ENTRADAS_VALIDA_SA al entrar)
-Entorno.Nivel => NivelUsuario
-Entorno.Restriccion => NivelUsuario
+# DatosAbiertos, Delegacion, SerieRestringida, ColorEnlaceActivo, ColorCampoID, ColorEdtFnd, DirectorioComunicaciones,
+# Nivel y Restriccion de REntorno están en TEntorno de Merge13 con el mismo nombre: no necesitan equivalencia.
 
 # En un frame la estructura ya está creada cuando se ejecuta cualquier evento
 EstructuraCreada => True
@@ -30,8 +20,8 @@ Entorno.UserID => Entorno.SMTP_Usuario
 Entorno.Password => Entorno.SMTP_Password
 Entorno.PasswordEnc => Entorno.SMTP_PasswordEnc
 Entorno.Identificacion => Entorno.SMTP_Identificacion
-# Registro de trazas de Merge (DMMain.Log) -> UAuxMerge
-DMMain.Log => LogMerge
+# Registro de trazas de Merge (DMMain.Log) -> Log de ULog de Merge13
+DMMain.Log => Log
 
 # TNsDBGrid / TDBGridFind2000: columna inicial de edición -> columna seleccionada de TDBGrid
 ColumnaInicial => SelectedIndex
